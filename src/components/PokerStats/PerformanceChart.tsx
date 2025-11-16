@@ -68,18 +68,6 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 			setSelectedPlayer(playerName);
 		}
 	};
-
-	const togglePlayerVisibility = (player: string) => {
-		setHiddenPlayers((prev) => {
-			const newSet = new Set(prev);
-			if (newSet.has(player)) {
-				newSet.delete(player);
-			} else {
-				newSet.add(player);
-			}
-			return newSet;
-		});
-	};
 	// Group sessions by player and calculate cumulative profit over time
 	const parseDate = (dateStr: string) => {
 		const [month, day, year] = dateStr.split("/").map(Number);
