@@ -142,16 +142,19 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 				(s) => parseDate(s.date).getTime() <= dateTime
 			);
 			if (relevantSessions.length > 0) {
-				const lastSession = relevantSessions[relevantSessions.length - 1];
+				const lastSession =
+					relevantSessions[relevantSessions.length - 1];
 				// Only add the data point if the player played on this specific date
 				if (lastSession.date === date) {
 					dataPoint[player] = lastSession.cumulative;
 					// Store the day's profit/loss separately for tooltip
 					const playerSession = sessions.find((s) => s.date === date);
 					if (playerSession) {
-						const dayProfit = playerSession.cumulative - 
-							(relevantSessions.length > 1 
-								? relevantSessions[relevantSessions.length - 2].cumulative 
+						const dayProfit =
+							playerSession.cumulative -
+							(relevantSessions.length > 1
+								? relevantSessions[relevantSessions.length - 2]
+										.cumulative
 								: 0);
 						dataPoint[`${player}_dayProfit`] = dayProfit;
 					}

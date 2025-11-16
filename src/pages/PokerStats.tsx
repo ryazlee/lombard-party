@@ -7,7 +7,6 @@ import {
 	PlayerSummary,
 } from "../services/pokerService";
 import PlayerSummaryTable from "../components/PokerStats/PlayerSummaryTable";
-import RecentSessionsTable from "../components/PokerStats/RecentSessionsTable";
 import PerformanceChart from "../components/PokerStats/PerformanceChart";
 
 const PokerStats: React.FC = () => {
@@ -83,14 +82,11 @@ const PokerStats: React.FC = () => {
 				</h1>
 
 				<div className="space-y-8">
-					{/* Player Summary */}
-					<PlayerSummaryTable playerStats={playerStats} />
-
 					{/* Performance Chart */}
 					<PerformanceChart sessions={sessions} />
 
-					{/* Recent Sessions */}
-					<RecentSessionsTable sessions={sessions} />
+					{/* Player Summary */}
+					<PlayerSummaryTable playerStats={playerStats} />
 				</div>
 			</div>
 		</div>
