@@ -1,3 +1,61 @@
+# Lombard Party
+
+Your apartment hub for poker stats and more.
+
+## Setup
+
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+2. **Set up Google Sheets API**:
+   - Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+   - Create a new project or select an existing one
+   - Enable the Google Sheets API
+   - Create an API key (Credentials → Create Credentials → API Key)
+   - Restrict the API key to only allow Google Sheets API
+   
+3. **Configure environment variables**:
+   - Copy `.env.example` to `.env`:
+     ```bash
+     cp .env.example .env
+     ```
+   - Add your Google Sheets API key to `.env`:
+     ```
+     REACT_APP_GOOGLE_SHEETS_API_KEY=your_api_key_here
+     ```
+
+4. **Make your Google Sheet accessible**:
+   - Open your Google Sheet
+   - Click "Share" → Change to "Anyone with the link can view"
+   - Update the `SHEET_ID` in `src/services/pokerService.ts` if needed
+
+## Available Scripts
+
+### `npm start`
+
+Runs the app in development mode at [http://localhost:3000](http://localhost:3000).
+
+### `npm run build`
+
+Builds the app for production to the `build` folder.
+
+## Features
+
+- **Home Page**: Simple landing page with navigation
+- **Poker Stats**: View poker game statistics including:
+  - Player summaries with total profit, ROI, and hourly rates
+  - Recent session history
+  - Real-time data from Google Sheets
+
+## Tech Stack
+
+- React 19 with TypeScript
+- React Router for navigation
+- Tailwind CSS for styling
+- Google Sheets API for data fetching
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
