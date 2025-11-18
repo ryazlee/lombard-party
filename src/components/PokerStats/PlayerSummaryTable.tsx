@@ -143,7 +143,17 @@ const PlayerSummaryTableDataGrid: React.FC<PlayerSummaryTableProps> = ({
 	}));
 
 	return (
-		<Box sx={{ p: isMobile ? 2 : 6, minHeight: 500, bgcolor: "#f3f4f6" }}>
+		<Box
+			sx={{
+				p: isMobile ? 2 : 6,
+				minHeight: 500,
+				bgcolor: "white",
+				borderRadius: 2,
+				boxShadow: 3,
+				border: `1px solid ${theme.palette.grey[300]}`,
+				overflow: "hidden", // Prevent content overflow
+			}}
+		>
 			<Typography
 				variant={isMobile ? "h5" : "h4"}
 				component="h2"

@@ -17,13 +17,16 @@ const Home: React.FC = () => {
 		>
 			<Box textAlign="center">
 				<Typography
-					variant="h1"
+					variant="h3"
 					fontWeight="bold"
 					sx={{ mb: 2, color: "#1f2937" }}
 				>
 					Welcome to 548 Lombard
 				</Typography>
-				<Typography variant="h5" sx={{ mb: 4, color: "#4b5563" }}>
+				<Typography
+					variant="subtitle1"
+					sx={{ mb: 4, color: "#4b5563" }}
+				>
 					Apartment hub for all things fun
 				</Typography>
 				<Box>
@@ -37,7 +40,7 @@ const Home: React.FC = () => {
 							":hover": { bgcolor: "#1d4ed8" },
 							color: "white",
 							px: 4,
-							py: 1.5,
+							py: 2,
 							borderRadius: 2,
 							fontWeight: "bold",
 						}}

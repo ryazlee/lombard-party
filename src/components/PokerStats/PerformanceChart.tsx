@@ -137,19 +137,17 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 	return (
 		<Box
 			sx={{
-				bgcolor: theme.palette.grey[100],
-
+				bgcolor: "white",
+				borderRadius: 2,
+				boxShadow: 3,
 				border: `1px solid ${theme.palette.grey[300]}`,
-				overflow: "hidden",
-				p: isMobile ? 2 : 6, // Match padding with PlayerSummaryTable
+				overflow: "hidden", // Prevent content overflow
+				p: isMobile ? 2 : 6,
 			}}
 		>
 			<Box
 				sx={{
 					px: isMobile ? 2 : 3,
-					bgcolor: theme.palette.grey[100],
-					borderBottom: 1,
-					borderColor: theme.palette.divider,
 				}}
 			>
 				<Typography
@@ -157,29 +155,21 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 					component="h2"
 					align="center"
 					fontWeight="bold"
-					sx={{ mb: isMobile ? 2 : 4, color: "#1f2937" }}
+					sx={{ mb: isMobile ? 2 : 4 }}
 				>
 					Performance Over Time
 				</Typography>
 			</Box>
 
-			<Box
-				sx={{
-					p: isMobile ? 2 : 3,
-					bgcolor: "white",
-					borderRadius: 2,
-					boxShadow: 3,
-					border: `1px solid ${theme.palette.grey[300]}`,
-				}}
-			>
+			<Box sx={{ p: isMobile ? 2 : 3 }}>
 				<ResponsiveContainer width="100%" height={chartHeight}>
 					<LineChart
 						data={chartData}
 						margin={{
 							top: 5,
-							right: isMobile ? 0 : 20,
-							left: isMobile ? -20 : 0,
-							bottom: isMobile ? 0 : 5,
+							right: isMobile ? 10 : 20, // Adjust margins for smaller screens
+							left: isMobile ? 10 : 20,
+							bottom: isMobile ? 5 : 10,
 						}}
 					>
 						<CartesianGrid strokeDasharray="3 3" />
@@ -192,16 +182,13 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 							interval={xAxisInterval}
 							type="category"
 							allowDuplicatedCategory={false}
+							axisLine={true}
+							tickLine={true}
 						/>
 						<YAxis
 							tick={{ fontSize: isMobile ? 10 : 12 }}
-							label={{
-								value: "Cumulative Profit ($)",
-								angle: -90,
-								position: "insideLeft",
-								fontSize: isMobile ? 10 : 14,
-								offset: isMobile ? 5 : 10,
-							}}
+							type="number"
+							tickFormatter={(value) => `$${value}`}
 						/>
 						<Tooltip formatter={tooltipFormatter} />
 						<Legend
