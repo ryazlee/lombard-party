@@ -136,6 +136,8 @@ export const getPlayerStats = (
 			totalProfit: number;
 			sessions: number;
 			totalBuyIn: number;
+			highestSingleWinning: number;
+			normalizedAverage: number;
 		}
 	>();
 
@@ -144,12 +146,24 @@ export const getPlayerStats = (
 			totalProfit: 0,
 			sessions: 0,
 			totalBuyIn: 0,
+			highestSingleWinning: 0,
+			normalizedAverage: 0,
 		};
 
 		playerMap.set(session.player, {
 			totalProfit: existing.totalProfit + session.profit,
 			sessions: existing.sessions + 1,
 			totalBuyIn: existing.totalBuyIn + session.buyIn,
+			highestSingleWinning: Math.max(
+				existing.highestSingleWinning,
+				session.profit
+			),
+			normalizedAverage:
+				existing.totalBuyIn + session.buyIn > 0
+					? ((existing.totalProfit + session.profit) /
+							(existing.totalBuyIn + session.buyIn)) *
+					  100
+					: 0,
 		});
 	});
 
