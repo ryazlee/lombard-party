@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { PokerSession } from "../../types/poker/types";
 import { stringToColor } from "./utils";
+import { Box, Typography } from "@mui/material";
 
 interface PerformanceChartProps {
 	sessions: PokerSession[];
@@ -131,13 +132,25 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 	const players = Array.from(playerData.keys()).sort();
 
 	return (
-		<div className="bg-white rounded-lg shadow overflow-hidden">
-			<div className="px-6 py-4 bg-gray-100 border-b">
-				<h2 className="text-2xl font-semibold text-gray-800">
-					Performance Over Time
-				</h2>
-			</div>
-			<div className="p-6">
+		<Box sx={{ p: 6, minHeight: "100vh", bgcolor: "#f3f4f6" }}>
+			<Typography
+				variant="h4"
+				component="h2"
+				align="center"
+				fontWeight="bold"
+				sx={{ mb: 4, color: "#1f2937" }}
+			>
+				Performance Over Time
+			</Typography>
+
+			<Box
+				sx={{
+					bgcolor: "white",
+					boxShadow: 3,
+					borderRadius: 2,
+					p: 4,
+				}}
+			>
 				<ResponsiveContainer width="100%" height={700}>
 					<LineChart data={chartData}>
 						<CartesianGrid strokeDasharray="3 3" />
@@ -191,8 +204,8 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 							))}
 					</LineChart>
 				</ResponsiveContainer>
-			</div>
-		</div>
+			</Box>
+		</Box>
 	);
 };
 
