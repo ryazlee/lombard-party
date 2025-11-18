@@ -132,7 +132,7 @@ const PokerStats: React.FC = () => {
 				{/* Responsive Heading */}
 				<Typography
 					variant={isMobile ? "h4" : "h3"}
-					component="h1"
+					component="h2"
 					fontWeight="bold"
 					color="text.primary"
 					sx={{ mb: isMobile ? 3 : 5 }}
