@@ -1,15 +1,4 @@
-export interface PokerSession {
-	date: string;
-	player: string;
-	buyIn: number;
-	profit: number;
-}
-
-export interface PlayerSummary {
-	player: string;
-	totalWinnings: number;
-	sessionCount: number;
-}
+import { PokerSession, PlayerSummary } from "../types/poker/types";
 
 const SHEET_ID = "1Hm-MOWeBZf6b4YTOhJe0rDc8KC6rXPdprqLRbxBscis";
 const SHEET_NAME = "data";

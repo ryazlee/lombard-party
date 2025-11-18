@@ -6,10 +6,10 @@ const Home: React.FC = () => {
 		<div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8">
 			<div className="text-center">
 				<h1 className="text-6xl font-bold text-gray-900 mb-4">
-					Welcome to Lombard
+					Welcome to 548 Lombard
 				</h1>
 				<p className="text-xl text-gray-600 mb-8">
-					Your apartment hub for all things fun
+					Apartment hub for all things fun
 				</p>
 				<nav className="space-x-4">
 					<Link

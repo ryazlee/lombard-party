@@ -1,13 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-	fetchPokerStats,
-	getPlayerStats,
-	PokerSession,
-	PlayerSummary,
-} from "../services/pokerService";
+import { fetchPokerStats, getPlayerStats } from "../services/pokerService";
 import PlayerSummaryTable from "../components/PokerStats/PlayerSummaryTable";
 import PerformanceChart from "../components/PokerStats/PerformanceChart";
+import { PlayerSummary, PokerSession } from "../types/poker/types";
 
 const PokerStats: React.FC = () => {
 	const [sessions, setSessions] = useState<PokerSession[]>([]);
