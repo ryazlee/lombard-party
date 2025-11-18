@@ -137,32 +137,41 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 	return (
 		<Box
 			sx={{
-				bgcolor: "white",
-				borderRadius: 2,
-				boxShadow: 3,
+				bgcolor: theme.palette.grey[100],
+
+				border: `1px solid ${theme.palette.grey[300]}`,
 				overflow: "hidden",
+				p: isMobile ? 2 : 6, // Match padding with PlayerSummaryTable
 			}}
 		>
 			<Box
 				sx={{
 					px: isMobile ? 2 : 3,
-					py: 2,
 					bgcolor: theme.palette.grey[100],
 					borderBottom: 1,
 					borderColor: theme.palette.divider,
 				}}
 			>
 				<Typography
-					variant={isMobile ? "h6" : "h5"}
+					variant={isMobile ? "h5" : "h4"}
 					component="h2"
+					align="center"
 					fontWeight="bold"
-					color="text.primary"
+					sx={{ mb: isMobile ? 2 : 4, color: "#1f2937" }}
 				>
 					Performance Over Time
 				</Typography>
 			</Box>
 
-			<Box sx={{ p: isMobile ? 2 : 3 }}>
+			<Box
+				sx={{
+					p: isMobile ? 2 : 3,
+					bgcolor: "white",
+					borderRadius: 2,
+					boxShadow: 3,
+					border: `1px solid ${theme.palette.grey[300]}`,
+				}}
+			>
 				<ResponsiveContainer width="100%" height={chartHeight}>
 					<LineChart
 						data={chartData}
