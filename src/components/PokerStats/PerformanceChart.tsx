@@ -125,46 +125,44 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 	};
 
 	const players = Array.from(playerData.keys()).sort();
-	const chartHeight = isMobile ? 400 : 600;
+
+	// Apply mobile friendly logic to chart height
+	const chartHeight = isMobile ? 400 : 700;
+	// Adjust XAxis angle and height for mobile
+	const xAxisAngle = isMobile ? -90 : -45;
+	const xAxisHeight = isMobile ? 100 : 80;
+	const xAxisInterval = isMobile ? "preserveStart" : 0;
+	const tickFontSize = isMobile ? 8 : 12;
 
 	return (
 		<Box
 			sx={{
-				p: isMobile ? 2 : 6,
-				minHeight: 500,
-				bgcolor: "#f3f4f6",
-				// Centering content
-				display: "flex",
-				flexDirection: "column",
-				alignItems: "center",
+				bgcolor: "white",
+				borderRadius: 2,
+				boxShadow: 3,
+				overflow: "hidden",
 			}}
 		>
-			<Typography
-				variant={isMobile ? "h5" : "h4"}
-				component="h2"
-				align="center"
-				fontWeight="bold"
-				sx={{
-					mb: isMobile ? 2 : 4,
-					color: "#1f2937",
-					maxWidth: 1200,
-					width: "100%",
-				}}
-			>
-				Performance Over Time
-			</Typography>
-
-			{/* Chart Container - Centered and constrained */}
 			<Box
 				sx={{
-					bgcolor: "white",
-					boxShadow: 3,
-					borderRadius: 2,
-					p: isMobile ? 1.5 : 4,
-					width: "100%",
-					maxWidth: 1200, // Explicit max width for centering
+					px: isMobile ? 2 : 3,
+					py: 2,
+					bgcolor: theme.palette.grey[100],
+					borderBottom: 1,
+					borderColor: theme.palette.divider,
 				}}
 			>
+				<Typography
+					variant={isMobile ? "h6" : "h5"}
+					component="h2"
+					fontWeight="bold"
+					color="text.primary"
+				>
+					Performance Over Time
+				</Typography>
+			</Box>
+
+			<Box sx={{ p: isMobile ? 2 : 3 }}>
 				<ResponsiveContainer width="100%" height={chartHeight}>
 					<LineChart
 						data={chartData}
@@ -178,11 +176,11 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 						<CartesianGrid strokeDasharray="3 3" />
 						<XAxis
 							dataKey="date"
-							angle={isMobile ? -90 : -45}
+							angle={xAxisAngle}
 							textAnchor="end"
-							height={isMobile ? 100 : 80}
-							tick={{ fontSize: isMobile ? 8 : 12 }}
-							interval={isMobile ? "preserveStart" : 0}
+							height={xAxisHeight}
+							tick={{ fontSize: tickFontSize }}
+							interval={xAxisInterval}
 							type="category"
 							allowDuplicatedCategory={false}
 						/>

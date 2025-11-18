@@ -101,15 +101,12 @@ const PokerStats: React.FC = () => {
 	}
 
 	return (
-		// Main Container: Mobile-friendly padding and background
 		<Box
 			sx={{
 				minHeight: "100vh",
-				bgcolor: "#f3f4f6",
-				p: isMobile ? 2 : 4,
+				p: 2,
 			}}
 		>
-			{/* Content Wrapper: Takes full width on mobile, constrained on desktop, centered */}
 			<Box
 				sx={{
 					width: "100%",
@@ -117,7 +114,7 @@ const PokerStats: React.FC = () => {
 					mx: "auto",
 				}}
 			>
-				<Box sx={{ mb: isMobile ? 2 : 3 }}>
+				<Box sx={{ mb: 2 }}>
 					<Link
 						to="/"
 						style={{
@@ -129,13 +126,11 @@ const PokerStats: React.FC = () => {
 					</Link>
 				</Box>
 
-				{/* Responsive Heading */}
 				<Typography
-					variant={isMobile ? "h4" : "h3"}
-					component="h2"
+					variant={"h4"}
 					fontWeight="bold"
 					color="text.primary"
-					sx={{ mb: isMobile ? 3 : 5 }}
+					sx={{ mb: 3 }}
 				>
 					Poker Stats
 				</Typography>
@@ -145,7 +140,7 @@ const PokerStats: React.FC = () => {
 					sx={{
 						display: "flex",
 						flexDirection: "column",
-						gap: isMobile ? 4 : 6,
+						gap: 4,
 					}}
 				>
 					{/* Performance Chart */}
