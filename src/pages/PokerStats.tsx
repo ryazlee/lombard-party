@@ -4,8 +4,19 @@ import { fetchPokerStats, getPlayerStats } from "../services/pokerService";
 import PlayerSummaryTable from "../components/PokerStats/PlayerSummaryTable";
 import PerformanceChart from "../components/PokerStats/PerformanceChart";
 import { PlayerSummary, PokerSession } from "../types/poker/types";
+import {
+	Box,
+	Typography,
+	CircularProgress,
+	Alert,
+	useTheme,
+	useMediaQuery,
+} from "@mui/material";
 
 const PokerStats: React.FC = () => {
+	const theme = useTheme();
+	const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
 	const [sessions, setSessions] = useState<PokerSession[]>([]);
 	const [playerSummaries, setPlayerSummaries] = useState<PlayerSummary[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -37,55 +48,114 @@ const PokerStats: React.FC = () => {
 
 	if (loading) {
 		return (
-			<div className="min-h-screen bg-gray-50 flex items-center justify-center">
-				<div className="text-xl text-gray-600">
-					Loading poker stats...
-				</div>
-			</div>
+			<Box
+				sx={{
+					minHeight: "100vh",
+					bgcolor: "#f3f4f6",
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "center",
+					p: 2, // Mobile padding
+				}}
+			>
+				<Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+					<CircularProgress size={24} />
+					<Typography variant="h6" color="text.secondary">
+						Loading poker stats...
+					</Typography>
+				</Box>
+			</Box>
 		);
 	}
 
 	if (error) {
 		return (
-			<div className="min-h-screen bg-gray-50 p-8">
-				<div className="max-w-4xl mx-auto">
+			<Box
+				sx={{
+					minHeight: "100vh",
+					bgcolor: "#f3f4f6",
+					p: isMobile ? 2 : 4,
+				}}
+			>
+				<Box sx={{ maxWidth: 900, mx: "auto" }}>
 					<Link
 						to="/"
-						className="text-blue-600 hover:text-blue-800 mb-4 inline-block"
+						style={{
+							color: theme.palette.primary.main,
+							textDecoration: "none",
+							marginBottom: theme.spacing(2),
+							display: "inline-block",
+						}}
 					>
 						← Back to Home
 					</Link>
-					<div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
-						<p className="font-semibold">Error</p>
-						<p>{error}</p>
-					</div>
-				</div>
-			</div>
+					<Alert severity="error">
+						<Typography component="p" fontWeight="bold">
+							Error
+						</Typography>
+						<Typography component="p">{error}</Typography>
+					</Alert>
+				</Box>
+			</Box>
 		);
 	}
 
 	return (
-		<div className="min-h-screen bg-gray-50 p-8">
-			<div className="max-w-7xl mx-auto">
-				<div className="mb-6">
-					<Link to="/" className="text-blue-600 hover:text-blue-800">
+		// Main Container: Mobile-friendly padding and background
+		<Box
+			sx={{
+				minHeight: "100vh",
+				bgcolor: "#f3f4f6",
+				p: isMobile ? 2 : 4,
+			}}
+		>
+			{/* Content Wrapper: Takes full width on mobile, constrained on desktop, centered */}
+			<Box
+				sx={{
+					width: "100%",
+					maxWidth: "1200px", // Adjusted from 7xl equivalent for better control
+					mx: "auto",
+				}}
+			>
+				<Box sx={{ mb: isMobile ? 2 : 3 }}>
+					<Link
+						to="/"
+						style={{
+							color: theme.palette.primary.main,
+							textDecoration: "none",
+						}}
+					>
 						← Back to Home
 					</Link>
-				</div>
+				</Box>
 
-				<h1 className="text-4xl font-bold text-gray-900 mb-8">
+				{/* Responsive Heading */}
+				<Typography
+					variant={isMobile ? "h4" : "h3"}
+					component="h1"
+					fontWeight="bold"
+					color="text.primary"
+					sx={{ mb: isMobile ? 3 : 5 }}
+				>
 					Poker Stats
-				</h1>
+				</Typography>
 
-				<div className="space-y-8">
+				{/* Content Sections: Responsive vertical spacing */}
+				<Box
+					sx={{
+						display: "flex",
+						flexDirection: "column",
+						gap: isMobile ? 4 : 6,
+					}}
+				>
 					{/* Performance Chart */}
 					<PerformanceChart sessions={sessions} />
 
 					{/* Player Summary */}
 					<PlayerSummaryTable playerStats={playerStats} />
-				</div>
-			</div>
-		</div>
+				</Box>
+			</Box>
+		</Box>
 	);
 };
 
