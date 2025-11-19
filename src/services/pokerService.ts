@@ -137,7 +137,6 @@ export const getPlayerStats = (
 			sessions: number;
 			totalBuyIn: number;
 			highestSingleWinning: number;
-			normalizedAverage: number;
 		}
 	>();
 
@@ -147,7 +146,6 @@ export const getPlayerStats = (
 			sessions: 0,
 			totalBuyIn: 0,
 			highestSingleWinning: 0,
-			normalizedAverage: 0,
 		};
 
 		playerMap.set(session.player, {
@@ -158,17 +156,12 @@ export const getPlayerStats = (
 				existing.highestSingleWinning,
 				session.profit
 			),
-			normalizedAverage:
-				existing.totalBuyIn + session.buyIn > 0
-					? ((existing.totalProfit + session.profit) /
-							(existing.totalBuyIn + session.buyIn)) *
-					  100
-					: 0,
 		});
 	});
 
 	return Array.from(playerMap.entries()).map(([player, stats]) => {
 		const summary = summaries.find((s) => s.player === player);
+
 		return {
 			player,
 			...stats,

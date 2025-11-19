@@ -167,8 +167,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 						data={chartData}
 						margin={{
 							top: 5,
-							right: isMobile ? 10 : 20, // Adjust margins for smaller screens
-							left: isMobile ? 10 : 20,
+							right: 10,
 							bottom: isMobile ? 5 : 10,
 						}}
 					>
@@ -190,15 +189,11 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 							type="number"
 							tickFormatter={(value) => `$${value}`}
 						/>
-						<Tooltip formatter={tooltipFormatter} />
+						{!isMobile && <Tooltip formatter={tooltipFormatter} />}
 						<Legend
 							onClick={handleLegendClick}
 							iconType="circle"
-							wrapperStyle={
-								isMobile
-									? { fontSize: 10, padding: "5px 0" }
-									: {}
-							}
+							wrapperStyle={{ fontSize: isMobile ? 10 : 12 }}
 						/>
 						{players
 							.filter((player) => !hiddenPlayers.has(player))

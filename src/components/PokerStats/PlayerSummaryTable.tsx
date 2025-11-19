@@ -9,7 +9,6 @@ interface PlayerStat {
 	avgProfit: number; // Average Winnings/Profit per session
 	roi: number; // Return on Investment (Avg Weighted Average Performance)
 	highestSingleWinning: number; // Highest single score
-	normalizedAverage: number; // Normalized average (avg % of buy-in won/lost)
 }
 
 interface PlayerSummaryTableProps {
@@ -96,23 +95,6 @@ const baseColumns: GridColDef<PlayerStat>[] = [
 		valueFormatter: (value) => formatCurrency(value),
 	},
 	{
-		field: "normalizedAverage",
-		headerName: "Normalized Avg (%)",
-		flex: 1,
-		minWidth: 130,
-		type: "number",
-		sortable: true,
-		align: "right",
-		headerAlign: "right",
-		headerClassName: "super-app-theme--header",
-		renderCell: (params: GridRenderCellParams<PlayerStat, number>) =>
-			params.value !== undefined && (
-				<span style={getTextColorStyle(params.value)}>
-					{formatPercent(params.value)}
-				</span>
-			),
-	},
-	{
 		field: "roi",
 		headerName: "ROI (%)",
 		flex: 1,
@@ -191,7 +173,7 @@ const PlayerSummaryTableDataGrid: React.FC<PlayerSummaryTableProps> = ({
 						},
 						sorting: {
 							sortModel: [
-								{ field: "totalWinnings", sort: "desc" },
+								{ field: "roi", sort: "desc" },
 							],
 						},
 					}}
