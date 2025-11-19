@@ -125,17 +125,7 @@ const PlayerSummaryTableDataGrid: React.FC<PlayerSummaryTableProps> = ({
 	}));
 
 	return (
-		<Box
-			sx={{
-				p: isMobile ? 2 : 6,
-				minHeight: 500,
-				bgcolor: "white",
-				borderRadius: 2,
-				boxShadow: 3,
-				border: `1px solid ${theme.palette.grey[300]}`,
-				overflow: "hidden", // Prevent content overflow
-			}}
-		>
+		<>
 			<Typography
 				variant={isMobile ? "h5" : "h4"}
 				component="h2"
@@ -152,8 +142,8 @@ const PlayerSummaryTableDataGrid: React.FC<PlayerSummaryTableProps> = ({
 					width: "100%",
 					mx: "auto",
 					maxWidth: 1200,
-					boxShadow: 3,
 					borderRadius: 2,
+					border: `2px solid ${theme.palette.grey[200]}`,
 					overflowX: "auto",
 					bgcolor: "white",
 					"& .super-app-theme--header": {
@@ -172,9 +162,7 @@ const PlayerSummaryTableDataGrid: React.FC<PlayerSummaryTableProps> = ({
 							paginationModel: { pageSize: isMobile ? 5 : 10 }, // 6. Fewer rows per page on mobile
 						},
 						sorting: {
-							sortModel: [
-								{ field: "roi", sort: "desc" },
-							],
+							sortModel: [{ field: "roi", sort: "desc" }],
 						},
 					}}
 					pageSizeOptions={[5, 10, 20]}
@@ -193,7 +181,7 @@ const PlayerSummaryTableDataGrid: React.FC<PlayerSummaryTableProps> = ({
 					}}
 				/>
 			</Box>
-		</Box>
+		</>
 	);
 };
 

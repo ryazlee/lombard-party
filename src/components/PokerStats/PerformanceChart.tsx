@@ -135,16 +135,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 	const tickFontSize = isMobile ? 8 : 12;
 
 	return (
-		<Box
-			sx={{
-				bgcolor: "white",
-				borderRadius: 2,
-				boxShadow: 3,
-				border: `1px solid ${theme.palette.grey[300]}`,
-				overflow: "hidden", // Prevent content overflow
-				p: isMobile ? 2 : 6,
-			}}
-		>
+		<>
 			<Box
 				sx={{
 					px: isMobile ? 2 : 3,
@@ -228,7 +219,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 					</LineChart>
 				</ResponsiveContainer>
 			</Box>
-		</Box>
+		</>
 	);
 };
 

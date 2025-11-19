@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { fetchPokerStats, getPlayerStats } from "../services/pokerService";
 import PlayerSummaryTable from "../components/PokerStats/PlayerSummaryTable";
 import PerformanceChart from "../components/PokerStats/PerformanceChart";
+import StatsCard from "../components/PokerStats/StatsCard";
 import { PlayerSummary, PokerSession } from "../types/poker/types";
 import {
 	Box,
@@ -144,10 +145,14 @@ const PokerStats: React.FC = () => {
 					}}
 				>
 					{/* Performance Chart */}
-					<PerformanceChart sessions={sessions} />
+					<StatsCard>
+						<PerformanceChart sessions={sessions} />
+					</StatsCard>
 
 					{/* Player Summary */}
-					<PlayerSummaryTable playerStats={playerStats} />
+					<StatsCard>
+						<PlayerSummaryTable playerStats={playerStats} />
+					</StatsCard>
 				</Box>
 			</Box>
 		</Box>
