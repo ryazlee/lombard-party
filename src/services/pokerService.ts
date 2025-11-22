@@ -1,62 +1,20 @@
 import { PokerSession, PlayerSummary } from "../types/poker/types";
+import { fetchSheetData } from "./googleDriveService";
 
 const SHEET_ID = "1Hm-MOWeBZf6b4YTOhJe0rDc8KC6rXPdprqLRbxBscis";
 const SHEET_NAME = "data";
-const API_KEY = process.env.REACT_APP_GOOGLE_SHEETS_API_KEY || "";
 
 export const fetchPokerStats = async (): Promise<{
 	sessions: PokerSession[];
 	playerSummaries: PlayerSummary[];
 }> => {
 	try {
-		// If no API key, use public CSV export
-		if (!API_KEY) {
-			const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
-			const response = await fetch(csvUrl);
+		const rows = await fetchSheetData({
+			sheetId: SHEET_ID,
+			sheetName: SHEET_NAME,
+		});
 
-			if (!response.ok) {
-				throw new Error(
-					"Failed to fetch poker stats. Make sure the Google Sheet is publicly accessible (Anyone with the link can view)."
-				);
-			}
-
-			const csvText = await response.text();
-			const lines = csvText.split("\n");
-			const rows = lines.map((line) => {
-				const cells: string[] = [];
-				let currentCell = "";
-				let inQuotes = false;
-
-				for (let i = 0; i < line.length; i++) {
-					const char = line[i];
-					if (char === '"') {
-						inQuotes = !inQuotes;
-					} else if (char === "," && !inQuotes) {
-						cells.push(currentCell.trim());
-						currentCell = "";
-					} else {
-						currentCell += char;
-					}
-				}
-				cells.push(currentCell.trim());
-				return cells;
-			});
-
-			return parseSheetData(rows);
-		}
-
-		// Using Google Sheets API v4 with API key
-		const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
-		const response = await fetch(url);
-
-		if (!response.ok) {
-			throw new Error("Failed to fetch poker stats");
-		}
-
-		const data = await response.json();
-		const rows = data.values;
-
-		if (!rows || rows.length === 0) {
+		if (rows.length === 0) {
 			return { sessions: [], playerSummaries: [] };
 		}
 

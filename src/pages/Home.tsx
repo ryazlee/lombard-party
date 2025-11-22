@@ -1,6 +1,40 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography, Button, ButtonProps } from "@mui/material";
+
+interface LinkButtonProps extends Omit<ButtonProps, "component"> {
+	to: string;
+	children: React.ReactNode;
+}
+
+const LinkButton: React.FC<LinkButtonProps> = ({
+	to,
+	children,
+	sx,
+	...props
+}) => {
+	return (
+		<Button
+			component={Link as any}
+			to={to}
+			variant="contained"
+			size="large"
+			sx={{
+				bgcolor: "#2563eb",
+				":hover": { bgcolor: "#1d4ed8" },
+				color: "white",
+				px: 4,
+				py: 2,
+				borderRadius: 2,
+				fontWeight: "bold",
+				...sx,
+			}}
+			{...props}
+		>
+			{children}
+		</Button>
+	);
+};
 
 const Home: React.FC = () => {
 	return (
@@ -29,24 +63,18 @@ const Home: React.FC = () => {
 				>
 					Apartment hub for all things fun
 				</Typography>
-				<Box>
-					<Button
-						component={Link}
-						to="/poker-stats"
-						variant="contained"
-						size="large"
-						sx={{
-							bgcolor: "#2563eb",
-							":hover": { bgcolor: "#1d4ed8" },
-							color: "white",
-							px: 4,
-							py: 2,
-							borderRadius: 2,
-							fontWeight: "bold",
-						}}
-					>
-						Poker Stats
-					</Button>
+				<Box
+					sx={{
+						display: "flex",
+						gap: 2,
+						flexWrap: "wrap",
+						justifyContent: "center",
+					}}
+				>
+					<LinkButton to="/poker-stats">Poker Stats</LinkButton>
+					<LinkButton disabled to="/christmas-card">
+						2025 Christmas Card
+					</LinkButton>
 				</Box>
 			</Box>
 		</Box>

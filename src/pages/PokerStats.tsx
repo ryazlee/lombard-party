@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { fetchPokerStats, getPlayerStats } from "../services/pokerService";
 import PlayerSummaryTable from "../components/PokerStats/PlayerSummaryTable";
 import PerformanceChart from "../components/PokerStats/PerformanceChart";
 import StatsCard from "../components/PokerStats/StatsCard";
+import { Page } from "../components/common/Page";
 import { PlayerSummary, PokerSession } from "../types/poker/types";
 import {
 	Box,
@@ -56,7 +56,7 @@ const PokerStats: React.FC = () => {
 					display: "flex",
 					alignItems: "center",
 					justifyContent: "center",
-					p: 2, // Mobile padding
+					p: 2,
 				}}
 			>
 				<Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
@@ -71,91 +71,38 @@ const PokerStats: React.FC = () => {
 
 	if (error) {
 		return (
-			<Box
-				sx={{
-					minHeight: "100vh",
-					bgcolor: "#f3f4f6",
-					p: isMobile ? 2 : 4,
-				}}
-			>
-				<Box sx={{ maxWidth: 900, mx: "auto" }}>
-					<Link
-						to="/"
-						style={{
-							color: theme.palette.primary.main,
-							textDecoration: "none",
-							marginBottom: theme.spacing(2),
-							display: "inline-block",
-						}}
-					>
-						← Back to Home
-					</Link>
-					<Alert severity="error">
-						<Typography component="p" fontWeight="bold">
-							Error
-						</Typography>
-						<Typography component="p">{error}</Typography>
-					</Alert>
-				</Box>
-			</Box>
+			<Page title="Poker Stats" maxWidth="900px">
+				<Alert severity="error">
+					<Typography component="p" fontWeight="bold">
+						Error
+					</Typography>
+					<Typography component="p">{error}</Typography>
+				</Alert>
+			</Page>
 		);
 	}
 
 	return (
-		<Box
-			sx={{
-				minHeight: "100vh",
-				p: 2,
-			}}
-		>
+		<Page title="Poker Stats">
+			{/* Content Sections: Responsive vertical spacing */}
 			<Box
 				sx={{
-					width: "100%",
-					maxWidth: "1200px", // Adjusted from 7xl equivalent for better control
-					mx: "auto",
+					display: "flex",
+					flexDirection: "column",
+					gap: 4,
 				}}
 			>
-				<Box sx={{ mb: 2 }}>
-					<Link
-						to="/"
-						style={{
-							color: theme.palette.primary.main,
-							textDecoration: "none",
-						}}
-					>
-						← Back to Home
-					</Link>
-				</Box>
+				{/* Performance Chart */}
+				<StatsCard>
+					<PerformanceChart sessions={sessions} />
+				</StatsCard>
 
-				<Typography
-					variant={"h4"}
-					fontWeight="bold"
-					color="text.primary"
-					sx={{ mb: 3 }}
-				>
-					Poker Stats
-				</Typography>
-
-				{/* Content Sections: Responsive vertical spacing */}
-				<Box
-					sx={{
-						display: "flex",
-						flexDirection: "column",
-						gap: 4,
-					}}
-				>
-					{/* Performance Chart */}
-					<StatsCard>
-						<PerformanceChart sessions={sessions} />
-					</StatsCard>
-
-					{/* Player Summary */}
-					<StatsCard>
-						<PlayerSummaryTable playerStats={playerStats} />
-					</StatsCard>
-				</Box>
+				{/* Player Summary */}
+				<StatsCard>
+					<PlayerSummaryTable playerStats={playerStats} />
+				</StatsCard>
 			</Box>
-		</Box>
+		</Page>
 	);
 };
 
