@@ -3,7 +3,7 @@ import { fetchPokerStats, getPlayerStats } from "../services/pokerService";
 import PlayerSummaryTable from "../components/PokerStats/PlayerSummaryTable";
 import PerformanceChart from "../components/PokerStats/PerformanceChart";
 import StatsCard from "../components/PokerStats/StatsCard";
-import { Page } from "../components/common/Page";
+import { PageWithParticles } from "../components/common/Page";
 import { PlayerSummary, PokerSession } from "../types/poker/types";
 import {
 	Box,
@@ -71,19 +71,19 @@ const PokerStats: React.FC = () => {
 
 	if (error) {
 		return (
-			<Page title="Poker Stats" maxWidth="900px">
+			<PageWithParticles title="Poker Stats" maxWidth="900px">
 				<Alert severity="error">
 					<Typography component="p" fontWeight="bold">
 						Error
 					</Typography>
 					<Typography component="p">{error}</Typography>
 				</Alert>
-			</Page>
+			</PageWithParticles>
 		);
 	}
 
 	return (
-		<Page title="Poker Stats">
+		<PageWithParticles title="Poker Stats">
 			{/* Content Sections: Responsive vertical spacing */}
 			<Box
 				sx={{
@@ -102,7 +102,7 @@ const PokerStats: React.FC = () => {
 					<PlayerSummaryTable playerStats={playerStats} />
 				</StatsCard>
 			</Box>
-		</Page>
+		</PageWithParticles>
 	);
 };
 
