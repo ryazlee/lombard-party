@@ -1,4 +1,4 @@
-import { PokerSession, PlayerSummary } from "../types/poker/types";
+import { PokerSession, PlayerSummary, PlayerStat } from "../types/poker/types";
 import { fetchSheetData } from "./googleDriveService";
 
 const SHEET_ID = "1Hm-MOWeBZf6b4YTOhJe0rDc8KC6rXPdprqLRbxBscis";
@@ -87,7 +87,7 @@ function parseSheetData(rows: string[][]): {
 export const getPlayerStats = (
 	sessions: PokerSession[],
 	summaries: PlayerSummary[]
-) => {
+): PlayerStat[] => {
 	const playerMap = new Map<
 		string,
 		{
