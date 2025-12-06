@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import PokerStats from "./pages/PokerStats";
 import ChristmasCard from "./pages/ChristmasCard";
 import { PokerYearInReview } from "./pages/PokerYearInReview";
+import WifiPage from "./pages/WifiPage";
 
 function App() {
 	return (
@@ -16,6 +17,7 @@ function App() {
 					path="/poker/yearly-review/:name"
 					element={<PokerYearInReview />}
 				/>
+				<Route path="/wifi" element={<WifiPage />} />
 			</Routes>
 		</Router>
 	);

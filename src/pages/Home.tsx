@@ -62,6 +62,7 @@ const Home: React.FC = () => {
 					justifyContent: "center",
 				}}
 			>
+				<LinkButton to="/wifi">WiFi Info</LinkButton>
 				<LinkButton to="/poker/stats">Poker Stats</LinkButton>
 				<LinkButton disabled to="/christmas-card">
 					2025 Christmas Card
