@@ -158,9 +158,6 @@ const PlayerSummaryTableDataGrid: React.FC<PlayerSummaryTableProps> = ({
 					rows={rowsWithId}
 					columns={baseColumns}
 					initialState={{
-						pagination: {
-							paginationModel: { pageSize: isMobile ? 5 : 10 }, // 6. Fewer rows per page on mobile
-						},
 						sorting: {
 							sortModel: [{ field: "roi", sort: "desc" }],
 						},
