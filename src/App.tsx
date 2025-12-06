@@ -14,7 +14,7 @@ function App() {
 				<Route path="/poker/stats" element={<PokerStats />} />
 				<Route path="/christmas-card" element={<ChristmasCard />} />
 				<Route
-					path="/poker/yearly-review/:name"
+					path="/poker/review/:name"
 					element={<PokerYearInReview />}
 				/>
 				<Route path="/wifi" element={<WifiPage />} />
