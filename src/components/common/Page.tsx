@@ -1,9 +1,12 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Box, Typography, useTheme, SxProps, Theme } from "@mui/material";
 import Particles from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
 import type { Engine } from "tsparticles-engine";
+
+// Generate a random seed once when the module loads (persists during navigation, resets on reload)
+const particleSeed = Math.random();
 
 export interface PageProps {
 	title?: string;
@@ -99,6 +102,63 @@ export const PageWithParticles: React.FC<PageProps> = ({
 		await loadSlim(engine);
 	}, []);
 
+	// Generate random particle configuration based on the seed
+	const particleConfig = useMemo(() => {
+		const random = (min: number, max: number) => {
+			// Use seed to generate consistent random values during navigation
+			const seededRandom = (particleSeed + min + max) % 1;
+			return min + seededRandom * (max - min);
+		};
+
+		const particleCount = Math.floor(random(40, 150));
+		const speed = random(0.5, 4);
+		const colors = [
+			["#ff6b35", "#f7931e", "#fdc830"], // orange
+			["#667eea", "#764ba2", "#f093fb"], // purple
+			["#4facfe", "#00f2fe", "#43e97b"], // blue-green
+			["#fa709a", "#fee140", "#30cfd0"], // pink-teal
+			["#ff6a00", "#ee0979", "#feca57"], // red-orange
+			["#06beb6", "#48b1bf", "#06d6a0"], // teal
+			["#f857a6", "#ff5858", "#ffd460"], // pink-yellow
+			["#4158d0", "#c850c0", "#ffcc70"], // blue-purple-yellow
+			["#0093e9", "#80d0c7", "#13547a"], // ocean
+			["#d4fc79", "#96e6a1", "#74ebd5"], // green
+		];
+		const colorIndex = Math.floor(random(0, colors.length));
+		const selectedColors = colors[colorIndex];
+		const allShapes = ["circle", "triangle", "star", "square", "polygon"];
+		
+		// Randomly select 1-4 shapes
+		const numShapes = Math.floor(random(1, 5));
+		const selectedShapes: string[] = [];
+		const shuffled = [...allShapes].sort(() => particleSeed - 0.5);
+		for (let i = 0; i < numShapes; i++) {
+			selectedShapes.push(shuffled[i]);
+		}
+
+		const moveDirection = ["none", "top", "bottom", "left", "right"][Math.floor(random(0, 5))];
+		const outMode = ["bounce", "out", "destroy"][Math.floor(random(0, 3))];
+
+		return {
+			particleCount,
+			speed,
+			colors: selectedColors,
+			shapes: selectedShapes,
+			linkDistance: random(80, 250),
+			linkOpacity: random(0.1, 0.6),
+			linkWidth: random(0.5, 2.5),
+			sizeMin: random(1, 4),
+			sizeMax: random(4, 10),
+			opacityMin: random(0.2, 0.5),
+			opacityMax: random(0.5, 0.9),
+			moveDirection: moveDirection as any,
+			outMode: outMode as any,
+			rotateSpeed: random(2, 10),
+			attractRotateX: random(400, 800),
+			attractRotateY: random(800, 1600),
+		};
+	}, []); // Empty dependency array - only compute once per app load
+
 	return (
 		<Box
 			sx={{
@@ -156,28 +216,28 @@ export const PageWithParticles: React.FC<PageProps> = ({
 					},
 					particles: {
 						color: {
-							value: ["#ff6b35", "#f7931e", "#fdc830"],
+							value: particleConfig.colors,
 						},
 						links: {
-							color: "#ff8c42",
-							distance: 150,
+							color: particleConfig.colors[0],
+							distance: particleConfig.linkDistance,
 							enable: true,
-							opacity: 0.4,
-							width: 1.5,
+							opacity: particleConfig.linkOpacity,
+							width: particleConfig.linkWidth,
 						},
 						move: {
-							direction: "none",
+							direction: particleConfig.moveDirection,
 							enable: true,
 							outModes: {
-								default: "bounce",
+								default: particleConfig.outMode,
 							},
 							random: true,
-							speed: 2,
+							speed: particleConfig.speed,
 							straight: false,
 							attract: {
 								enable: true,
-								rotateX: 600,
-								rotateY: 1200,
+								rotateX: particleConfig.attractRotateX,
+								rotateY: particleConfig.attractRotateY,
 							},
 						},
 						number: {
@@ -185,26 +245,26 @@ export const PageWithParticles: React.FC<PageProps> = ({
 								enable: true,
 								area: 800,
 							},
-							value: 100,
+							value: particleConfig.particleCount,
 						},
 						opacity: {
-							value: { min: 0.3, max: 0.7 },
+							value: { min: particleConfig.opacityMin, max: particleConfig.opacityMax },
 							animation: {
 								enable: true,
 								speed: 1,
-								minimumValue: 0.3,
+								minimumValue: particleConfig.opacityMin,
 								sync: false,
 							},
 						},
 						shape: {
-							type: ["circle", "triangle", "star"],
+							type: particleConfig.shapes,
 						},
 						size: {
-							value: { min: 2, max: 6 },
+							value: { min: particleConfig.sizeMin, max: particleConfig.sizeMax },
 							animation: {
 								enable: true,
 								speed: 3,
-								minimumValue: 2,
+								minimumValue: particleConfig.sizeMin,
 								sync: false,
 							},
 						},
@@ -214,7 +274,7 @@ export const PageWithParticles: React.FC<PageProps> = ({
 							direction: "random",
 							animation: {
 								enable: true,
-								speed: 5,
+								speed: particleConfig.rotateSpeed,
 								sync: false,
 							},
 						},
