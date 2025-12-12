@@ -127,7 +127,7 @@ export const PageWithParticles: React.FC<PageProps> = ({
 		const colorIndex = Math.floor(random(0, colors.length));
 		const selectedColors = colors[colorIndex];
 		const allShapes = ["circle", "triangle", "star", "square", "polygon"];
-		
+
 		// Randomly select 1-4 shapes
 		const numShapes = Math.floor(random(1, 5));
 		const selectedShapes: string[] = [];
