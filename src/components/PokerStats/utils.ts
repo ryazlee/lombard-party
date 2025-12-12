@@ -64,3 +64,7 @@ export const stringToColor = (str: string): string => {
 	const index = Math.abs(hash) % colors.length;
 	return colors[index];
 };
+export const convertNameToSnakeCase = (name?: string) => {
+	if (!name) return "";
+	return name.toLowerCase().replace(/\s+/g, "_");
+};

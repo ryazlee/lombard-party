@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { fetchPokerStats, getPlayerStats } from "../services/pokerService";
-import PlayerSummaryTable from "../components/PokerStats/PlayerSummaryTable";
-import PerformanceChart from "../components/PokerStats/PerformanceChart";
-import StatsCard from "../components/PokerStats/StatsCard";
-import { PageWithParticles } from "../components/common/Page";
-import { PlayerSummary, PokerSession } from "../types/poker/types";
+import { fetchPokerStats, getPlayerStats } from "../../services/pokerService";
+import PlayerSummaryTable from "../../components/PokerStats/PlayerSummaryTable";
+import PerformanceChart from "../../components/PokerStats/PerformanceChart";
+import StatsCard from "../../components/PokerStats/StatsCard";
+import { PageWithParticles } from "../../components/common/Page";
+import { PlayerSummary, PokerSession } from "../../types/poker/types";
 import {
 	Box,
 	Typography,
@@ -14,7 +14,7 @@ import {
 	useMediaQuery,
 } from "@mui/material";
 
-const PokerStats: React.FC = () => {
+export const PokerStatsPage: React.FC = () => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -105,5 +105,3 @@ const PokerStats: React.FC = () => {
 		</PageWithParticles>
 	);
 };
-
-export default PokerStats;

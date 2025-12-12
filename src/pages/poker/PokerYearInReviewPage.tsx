@@ -1,27 +1,25 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { fetchPokerStats, getPlayerStats } from "../services/pokerService";
-import { PlayerStat } from "../types/poker/types";
-import { PageWithParticles } from "../components/common/Page";
-import StatsCard from "../components/PokerStats/StatsCard";
+import { fetchPokerStats, getPlayerStats } from "../../services/pokerService";
+import { PlayerStat } from "../../types/poker/types";
+import { PageWithParticles } from "../../components/common/Page";
+import StatsCard from "../../components/PokerStats/StatsCard";
+import { convertNameToSnakeCase } from "../../components/PokerStats/utils";
 import {
 	Box,
 	Typography,
 	CircularProgress,
 	useTheme,
-	Divider,
 	Chip,
+	Button,
 } from "@mui/material";
+import html2canvas from "html2canvas";
 
-const convertNameToSnakeCase = (name?: string) => {
-	if (!name) return "";
-	return name.toLowerCase().replace(/\s+/g, "_");
-};
-
-export const PokerYearInReview: React.FC = () => {
+export const PokerYearInReviewPage: React.FC = () => {
 	const { name } = useParams<{ name: string }>();
 	const theme = useTheme();
 	const [loading, setLoading] = useState(true);
+	const contentRef = useRef<HTMLDivElement>(null);
 
 	const [currentUserStats, setCurrentUserStats] = useState<PlayerStat | null>(
 		null
@@ -48,7 +46,7 @@ export const PokerYearInReview: React.FC = () => {
 
 				if (userStats) {
 					setCurrentUserStats(userStats);
-					
+
 					// Calculate win rate
 					const userSessions = rawStats.sessions.filter(
 						(session) => convertNameToSnakeCase(session.player) === name
@@ -115,10 +113,40 @@ export const PokerYearInReview: React.FC = () => {
 	const biggestSession = Math.abs(currentUserStats.highestSingleWinning || 0);
 
 
+	const handleDownload = async () => {
+		if (!contentRef.current) return;
+
+		try {
+			// Wait for fonts to load
+			await document.fonts.ready;
+
+			// Capture the content as canvas
+			const canvas = await html2canvas(contentRef.current, {
+				scale: 2, // Higher quality
+				backgroundColor: '#f3f4f6',
+				allowTaint: true,
+				useCORS: true,
+			});
+
+			// Convert to blob and download
+			canvas.toBlob((blob) => {
+				if (blob) {
+					const url = URL.createObjectURL(blob);
+					const link = document.createElement('a');
+					link.download = `${playerName}-poker-wrapped-2025.png`;
+					link.href = url;
+					link.click();
+					URL.revokeObjectURL(url);
+				}
+			});
+		} catch (error) {
+			console.error('Error generating image:', error);
+		}
+	};
 
 	return (
 		<PageWithParticles>
-			<Box sx={{ maxWidth: 1200, mx: "auto", px: { xs: 2, sm: 3 }, py: 2 }}>
+			<Box ref={contentRef} sx={{ maxWidth: 1200, mx: "auto", px: { xs: 2, sm: 3 }, py: 2 }}>
 				{/* Header */}
 				<Box sx={{ textAlign: "center", mb: 3 }}>
 					<Typography variant="h3" fontWeight="bold" sx={{ mb: 0.5 }}>
@@ -319,12 +347,29 @@ export const PokerYearInReview: React.FC = () => {
 							label="🎰 Same Time Next Year?"
 							color="primary"
 							size="medium"
+							sx={{ whiteSpace: "nowrap" }}
 						/>
 					</Box>
-					<Typography variant="caption" color="text.secondary">
-						📸 Screenshot & share your year!
-					</Typography>
 				</Box>
+			</Box>
+
+			<Box sx={{ textAlign: "center", mt: 2, mb: 4 }}>
+				<Chip
+					label="📸 Download & Share Your Year"
+					onClick={handleDownload}
+					sx={{
+						px: 2,
+						py: 3,
+						borderRadius: 2,
+						fontWeight: "bold",
+						fontSize: "1.1rem",
+						background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+						color: "white",
+						"&:hover": {
+							background: "linear-gradient(135deg, #764ba2 0%, #667eea 100%)",
+						},
+					}}
+				/>
 			</Box>
 		</PageWithParticles>
 	);

@@ -1,21 +1,20 @@
-import React from "react";
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
-import PokerStats from "./pages/PokerStats";
-import ChristmasCard from "./pages/ChristmasCard";
-import { PokerYearInReview } from "./pages/PokerYearInReview";
-import WifiPage from "./pages/WifiPage";
+import { HomePage } from "./pages/HomePage";
+import { PokerStatsPage } from "./pages/poker/PokerStatsPage";
+import { ChristmasCardPage } from "./pages/ChristmasCardPage";
+import { WifiPage } from "./pages/WifiPage";
+import { PokerYearInReviewPage } from "./pages/poker/PokerYearInReviewPage";
 
 function App() {
 	return (
 		<Router>
 			<Routes>
-				<Route path="/" element={<Home />} />
-				<Route path="/poker/stats" element={<PokerStats />} />
-				<Route path="/christmas-card" element={<ChristmasCard />} />
+				<Route path="/" element={<HomePage />} />
+				<Route path="/poker/stats" element={<PokerStatsPage />} />
+				<Route path="/christmas-card" element={<ChristmasCardPage />} />
 				<Route
 					path="/poker/review/:name"
-					element={<PokerYearInReview />}
+					element={<PokerYearInReviewPage />}
 				/>
 				<Route path="/wifi" element={<WifiPage />} />
 			</Routes>

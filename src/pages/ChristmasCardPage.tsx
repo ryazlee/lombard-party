@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Typography } from "@mui/material";
 import { PageWithParticles } from "../components/common/Page";
 
-const ChristmasCard: React.FC = () => {
+export const ChristmasCardPage: React.FC = () => {
 	return (
 		<PageWithParticles title="2025 Christmas Card">
 			<Box>
@@ -13,5 +13,3 @@ const ChristmasCard: React.FC = () => {
 		</PageWithParticles>
 	);
 };
-
-export default ChristmasCard;

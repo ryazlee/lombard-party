@@ -136,26 +136,24 @@ export const PageWithParticles: React.FC<PageProps> = ({
 			selectedShapes.push(shuffled[i]);
 		}
 
-		const moveDirection = ["none", "top", "bottom", "left", "right"][Math.floor(random(0, 5))];
-		const outMode = ["bounce", "out", "destroy"][Math.floor(random(0, 3))];
+		const moveDirection = "none";
+		const outMode = "out";
 
 		return {
 			particleCount,
-			speed,
+			speed: random(0.5, 1.5), // Slower speed for floating
 			colors: selectedColors,
 			shapes: selectedShapes,
-			linkDistance: random(80, 250),
-			linkOpacity: random(0.05, 0.3),
-			linkWidth: random(0.5, 2.5),
-			sizeMin: random(1, 4),
-			sizeMax: random(4, 10),
-			opacityMin: random(0.2, 0.5),
-			opacityMax: random(0.5, 0.9),
+			linkDistance: random(100, 200),
+			linkOpacity: random(0.1, 0.4),
+			linkWidth: 1,
+			sizeMin: random(2, 5),
+			sizeMax: random(5, 12),
+			opacityMin: random(0.3, 0.6),
+			opacityMax: random(0.6, 0.9),
 			moveDirection: moveDirection as any,
 			outMode: outMode as any,
-			rotateSpeed: random(2, 10),
-			attractRotateX: random(400, 800),
-			attractRotateY: random(800, 1600),
+			rotateSpeed: random(1, 3),
 		};
 	}, []); // Empty dependency array - only compute once per app load
 
@@ -182,47 +180,16 @@ export const PageWithParticles: React.FC<PageProps> = ({
 							value: "transparent",
 						},
 					},
-					fpsLimit: 120,
+					fpsLimit: 60,
 					interactivity: {
 						events: {
 							onClick: {
-								enable: true,
-								mode: ["push", "repulse"],
+								enable: false,
 							},
 							onHover: {
 								enable: false,
 							},
 							resize: true,
-						},
-						modes: {
-							push: {
-								quantity: 8,
-							},
-							repulse: {
-								distance: 200,
-								duration: 0.4,
-							},
-							grab: {
-								distance: 180,
-								links: {
-									opacity: 0.9,
-									color: particleConfig.colors[0],
-								},
-							},
-							bubble: {
-								distance: 250,
-								size: 12,
-								duration: 2,
-								opacity: 0.9,
-								mix: false,
-							},
-							connect: {
-								distance: 150,
-								links: {
-									opacity: 1,
-								},
-								radius: 150,
-							},
 						},
 					},
 					particles: {
@@ -246,18 +213,7 @@ export const PageWithParticles: React.FC<PageProps> = ({
 							speed: particleConfig.speed,
 							straight: false,
 							attract: {
-								enable: true,
-								rotateX: particleConfig.attractRotateX,
-								rotateY: particleConfig.attractRotateY,
-							},
-							warp: true,
-							vibrate: true,
-							path: {
-								enable: true,
-								delay: {
-									value: 0,
-								},
-								options: {},
+								enable: false,
 							},
 						},
 						number: {
@@ -271,11 +227,9 @@ export const PageWithParticles: React.FC<PageProps> = ({
 							value: { min: particleConfig.opacityMin, max: particleConfig.opacityMax },
 							animation: {
 								enable: true,
-								speed: 1,
+								speed: 0.5,
 								minimumValue: particleConfig.opacityMin,
 								sync: false,
-								startValue: "random",
-								destroy: "none",
 							},
 						},
 						shape: {
@@ -285,11 +239,9 @@ export const PageWithParticles: React.FC<PageProps> = ({
 							value: { min: particleConfig.sizeMin, max: particleConfig.sizeMax },
 							animation: {
 								enable: true,
-								speed: 3,
+								speed: 2,
 								minimumValue: particleConfig.sizeMin,
 								sync: false,
-								startValue: "random",
-								destroy: "none",
 							},
 						},
 						rotate: {
@@ -301,32 +253,6 @@ export const PageWithParticles: React.FC<PageProps> = ({
 								speed: particleConfig.rotateSpeed,
 								sync: false,
 							},
-						},
-						wobble: {
-							distance: 15,
-							enable: true,
-							speed: {
-								angle: 8,
-								move: 5,
-							},
-						},
-						stroke: {
-							width: 0.5,
-							color: {
-								value: particleConfig.colors,
-								animation: {
-									enable: true,
-									speed: 20,
-									sync: false,
-								},
-							},
-						},
-						life: {
-							duration: {
-								value: 0,
-								sync: false,
-							},
-							count: 0,
 						},
 					},
 					detectRetina: true,

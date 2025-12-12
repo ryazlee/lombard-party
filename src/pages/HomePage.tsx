@@ -37,7 +37,7 @@ const LinkButton: React.FC<LinkButtonProps> = ({
 	);
 };
 
-const Home: React.FC = () => {
+export const HomePage: React.FC = () => {
 	return (
 		<PageWithParticles
 			centered
@@ -72,4 +72,3 @@ const Home: React.FC = () => {
 	);
 };
 
-export default Home;
