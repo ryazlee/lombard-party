@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { fetchPokerStats, getPlayerStats } from "../services/pokerService";
 import { PlayerStat } from "../types/poker/types";
@@ -26,6 +26,11 @@ export const PokerYearInReview: React.FC = () => {
 	const [currentUserStats, setCurrentUserStats] = useState<PlayerStat | null>(
 		null
 	);
+	const [winRate, setWinRate] = useState<number>(0);
+
+	const playerName = useMemo(() => {
+		return currentUserStats ? currentUserStats.player.split(" ")[0] : "Player";
+	}, [currentUserStats]);
 
 	useEffect(() => {
 		const loadPokerStats = async () => {
@@ -43,6 +48,18 @@ export const PokerYearInReview: React.FC = () => {
 
 				if (userStats) {
 					setCurrentUserStats(userStats);
+					
+					// Calculate win rate
+					const userSessions = rawStats.sessions.filter(
+						(session) => convertNameToSnakeCase(session.player) === name
+					);
+					const winningSessions = userSessions.filter(
+						(session) => session.profit > 0
+					);
+					const winRatePercent = userSessions.length > 0
+						? (winningSessions.length / userSessions.length) * 100
+						: 0;
+					setWinRate(winRatePercent);
 				}
 
 				setLoading(false);
@@ -57,7 +74,7 @@ export const PokerYearInReview: React.FC = () => {
 
 	if (loading) {
 		return (
-			<PageWithParticles title="Your 2025 Poker Wrapped">
+			<PageWithParticles title="✨ Your 2025 Poker Wrapped ✨">
 				<Box
 					sx={{
 						display: "flex",
@@ -69,7 +86,7 @@ export const PokerYearInReview: React.FC = () => {
 					<Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
 						<CircularProgress size={24} />
 						<Typography variant="h6" color="text.secondary">
-							Loading your poker year...
+							🎰 Shuffling the cards... Loading your epic poker journey! 🃏
 						</Typography>
 					</Box>
 				</Box>
@@ -79,14 +96,14 @@ export const PokerYearInReview: React.FC = () => {
 
 	if (!currentUserStats) {
 		return (
-			<PageWithParticles title="Your 2025 Poker Wrapped">
+			<PageWithParticles title="✨ Your 2025 Poker Wrapped ✨">
 				<StatsCard>
 					<Typography
 						variant="h6"
 						color="text.secondary"
 						textAlign="center"
 					>
-						No stats found for {name}
+						🤔 Hmm... No poker adventures found for {name}! Did you play in disguise? 🎭
 					</Typography>
 				</StatsCard>
 			</PageWithParticles>
@@ -97,163 +114,217 @@ export const PokerYearInReview: React.FC = () => {
 	const totalAmount = Math.abs(currentUserStats.totalWinnings || 0);
 	const biggestSession = Math.abs(currentUserStats.highestSingleWinning || 0);
 
+
+
 	return (
-		<PageWithParticles
-			title={`${currentUserStats.player}'s 2025 Poker Wrapped`}
-		>
-			<Box
-				sx={{
-					display: "grid",
-					gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-					gap: 2,
-				}}
-			>
-				{/* Main Stats Card */}
-				<StatsCard>
-					<Box sx={{ textAlign: "center", py: 1 }}>
+		<PageWithParticles>
+			<Box sx={{ maxWidth: 1200, mx: "auto", px: { xs: 2, sm: 3 }, py: 2 }}>
+				{/* Header */}
+				<Box sx={{ textAlign: "center", mb: 3 }}>
+					<Typography variant="h3" fontWeight="bold" sx={{ mb: 0.5 }}>
+						🎉 {playerName}'s 2025 Lombard Poker Recap! 🎊
+					</Typography>
+				</Box>
+
+				{/* Main Grid */}
+				<Box
+					sx={{
+						display: "grid",
+						gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+						gap: { xs: 2, sm: 3 },
+					}}
+				>
+					{/* Main Win/Loss - Takes full width */}
+					<Box
+						sx={{
+							gridColumn: "1 / -1",
+							bgcolor: isWinner ? "rgba(76, 175, 80, 0.1)" : "rgba(255, 107, 53, 0.1)",
+							borderRadius: 3,
+							p: { xs: 2, sm: 3 },
+							textAlign: "center",
+							border: `2px solid ${isWinner ? "#4caf50" : "#ff6b35"}`,
+						}}
+					>
 						<Typography
 							variant="overline"
 							color="text.secondary"
-							sx={{ fontSize: "0.75rem", letterSpacing: 1 }}
+							sx={{ fontSize: "0.85rem", letterSpacing: 1.5, fontWeight: "bold" }}
 						>
-							This Year You
+							✨ THIS YEAR YOU ✨
 						</Typography>
 						<Typography
-							variant="h3"
+							variant="h1"
 							fontWeight="bold"
 							sx={{
+								fontSize: { xs: 48, sm: 60, md: 72 },
 								my: 1,
 								color: isWinner ? "#4caf50" : "#ff6b35",
 							}}
 						>
-							{isWinner ? "📈 Won" : "📉 Lost"}
-						</Typography>
-						<Typography
-							variant="h2"
-							fontWeight="bold"
-							sx={{ color: theme.palette.text.primary }}
-						>
-							${totalAmount.toFixed(2)}
-						</Typography>
-					</Box>
-				</StatsCard>
-
-				{/* Sessions Played */}
-				<StatsCard>
-					<Box sx={{ textAlign: "center", py: 1 }}>
-						<Typography
-							variant="overline"
-							color="text.secondary"
-							sx={{ fontSize: "0.75rem", letterSpacing: 1 }}
-						>
-							Sessions Played
-						</Typography>
-						<Typography
-							variant="h2"
-							fontWeight="bold"
-							sx={{ my: 1, color: "#2563eb" }}
-						>
-							{currentUserStats.sessions}
-						</Typography>
-						<Typography variant="body2" color="text.secondary">
-							times at the table
-						</Typography>
-					</Box>
-				</StatsCard>
-
-				{/* Biggest Session */}
-				<StatsCard>
-					<Box sx={{ textAlign: "center", py: 1 }}>
-						<Typography variant="h2" sx={{ fontSize: 50 }}>
-							🔥
-						</Typography>
-						<Typography
-							variant="overline"
-							color="text.secondary"
-							sx={{ fontSize: "0.75rem", letterSpacing: 1 }}
-						>
-							{currentUserStats.highestSingleWinning > 0
-								? "Biggest Win"
-								: "Biggest Loss"}
-						</Typography>
-						<Typography
-							variant="h2"
-							fontWeight="bold"
-							sx={{ my: 1, color: "#ff6b35" }}
-						>
-							${biggestSession.toFixed(2)}
-						</Typography>
-					</Box>
-				</StatsCard>
-
-				{/* ROI Card */}
-				<StatsCard>
-					<Box sx={{ textAlign: "center", py: 1 }}>
-						<Typography
-							variant="overline"
-							color="text.secondary"
-							sx={{ fontSize: "0.75rem", letterSpacing: 1 }}
-						>
-							ROI
+							{isWinner ? "WON" : "LOST"}
 						</Typography>
 						<Typography
 							variant="h2"
 							fontWeight="bold"
 							sx={{
-								my: 1,
-								color:
-									currentUserStats.roi > 0
-										? "#4caf50"
-										: "#f44336",
+								fontSize: { xs: 36, sm: 48, md: 60 },
+								mb: 0.5,
+								color: theme.palette.text.primary,
 							}}
 						>
-							{currentUserStats.roi.toFixed(1)}%
+							${totalAmount.toFixed(2)}
 						</Typography>
-						<Typography variant="body2" color="text.secondary">
-							Avg: ${currentUserStats.avgProfit.toFixed(2)} per
-							session
+						<Typography variant="body1" color="text.secondary">
+							{isWinner ? "💰 Living the dream!" : "🎲 Fortune favors the brave!"}
 						</Typography>
 					</Box>
-				</StatsCard>
 
-				{/* Final Message */}
-				<StatsCard>
+					{/* Sessions Played */}
 					<Box
 						sx={{
+							bgcolor: "rgba(37, 99, 235, 0.1)",
+							borderRadius: 3,
+							p: 3,
 							textAlign: "center",
-							py: 1,
-							gridColumn: { xs: "1", md: "1 / -1" },
+							border: "2px solid #2563eb",
 						}}
 					>
-						<Typography variant="h2" sx={{ fontSize: 50, mb: 1 }}>
-							🏆
+						<Typography variant="h1" sx={{ fontSize: 48, mb: 1 }}>
+							🎴
 						</Typography>
 						<Typography
-							variant="h6"
+							variant="h2"
 							fontWeight="bold"
-							sx={{ mb: 1 }}
+							sx={{
+								fontSize: { xs: 48, md: 60 },
+								mb: 0.5,
+								color: "#2563eb",
+							}}
 						>
-							{currentUserStats.roi > 0
-								? "🎉 Congratulations, High Roller!"
-								: "💪 There's Always Next Year!"}
+							{currentUserStats.sessions}
+						</Typography>
+						<Typography variant="h6" fontWeight="bold" sx={{ mb: 0.5 }}>
+							Games Played
+						</Typography>
+						<Typography variant="body2" color="text.secondary">
+							{currentUserStats.sessions >= 10 ? "🎖️ Poker regular!" : "🌟 Great start!"}
+						</Typography>
+					</Box>
+
+					{/* ROI */}
+					<Box
+						sx={{
+							bgcolor: currentUserStats.roi > 0 ? "rgba(76, 175, 80, 0.1)" : "rgba(244, 67, 54, 0.1)",
+							borderRadius: 3,
+							p: 3,
+							textAlign: "center",
+							border: `2px solid ${currentUserStats.roi > 0 ? "#4caf50" : "#f44336"}`,
+						}}
+					>
+						<Typography variant="h1" sx={{ fontSize: 48, mb: 1 }}>
+							{currentUserStats.roi > 0 ? "📊" : "📉"}
 						</Typography>
 						<Typography
-							variant="body2"
-							color="text.secondary"
-							sx={{ mb: 1 }}
+							variant="h2"
+							fontWeight="bold"
+							sx={{
+								fontSize: { xs: 48, md: 60 },
+								mb: 0.5,
+								color: currentUserStats.roi > 0 ? "#4caf50" : "#f44336",
+							}}
 						>
-							{currentUserStats.roi > 0
-								? "You crushed it this year! You are officially too good for us. 😅"
-								: "Thanks for being a great sport and keeping the games fun! 🚀"}
+							{currentUserStats.roi > 0 ? "+" : ""}{currentUserStats.roi.toFixed(1)}%
 						</Typography>
+						<Typography variant="h6" fontWeight="bold" sx={{ mb: 0.5 }}>
+							💹 Return on Fun
+						</Typography>
+						<Typography variant="body2" color="text.secondary">
+							${currentUserStats.avgProfit.toFixed(2)} per game
+						</Typography>
+					</Box>
+
+					{/* Biggest Session */}
+					<Box
+						sx={{
+							bgcolor: "rgba(255, 107, 53, 0.1)",
+							borderRadius: 3,
+							p: 3,
+							textAlign: "center",
+							border: "2px solid #ff6b35",
+						}}
+					>
+						<Typography variant="h1" sx={{ fontSize: 48, mb: 1 }}>
+							{currentUserStats.highestSingleWinning > 0 ? "🔥" : "💥"}
+						</Typography>
+						<Typography
+							variant="h2"
+							fontWeight="bold"
+							sx={{
+								fontSize: { xs: 42, md: 54 },
+								mb: 0.5,
+								color: "#ff6b35",
+							}}
+						>
+							${biggestSession.toFixed(2)}
+						</Typography>
+						<Typography variant="h6" fontWeight="bold" sx={{ mb: 0.5 }}>
+							{currentUserStats.highestSingleWinning > 0
+								? "🎯 Most Epic Win"
+								: "😅 Biggest Oopsie"}
+						</Typography>
+						<Typography variant="body2" color="text.secondary">
+							{currentUserStats.highestSingleWinning > 0
+								? "What a night! 🌙"
+								: "We've all been there! 💪"}
+						</Typography>
+					</Box>
+
+					{/* Win Rate */}
+					<Box
+						sx={{
+							bgcolor: winRate >= 50 ? "rgba(138, 43, 226, 0.1)" : "rgba(255, 193, 7, 0.1)",
+							borderRadius: 3,
+							p: 3,
+							textAlign: "center",
+							border: `2px solid ${winRate >= 50 ? "#8a2be2" : "#ffc107"}`,
+						}}
+					>
+						<Typography variant="h1" sx={{ fontSize: 48, mb: 1 }}>
+							{winRate >= 50 ? "🎯" : "🎲"}
+						</Typography>
+						<Typography
+							variant="h2"
+							fontWeight="bold"
+							sx={{
+								fontSize: { xs: 48, md: 60 },
+								mb: 0.5,
+								color: winRate >= 50 ? "#8a2be2" : "#ffc107",
+							}}
+						>
+							{winRate.toFixed(0)}%
+						</Typography>
+						<Typography variant="h6" fontWeight="bold" sx={{ mb: 0.5 }}>
+							🏆 Win Rate
+						</Typography>
+						<Typography variant="body2" color="text.secondary">
+							{winRate >= 50 ? "Consistent winner! 🔥" : "Room to grow! 💪"}
+						</Typography>
+					</Box>
+				</Box>
+
+				{/* Footer */}
+				<Box sx={{ textAlign: "center", mt: 3 }}>
+					<Box sx={{ display: "flex", gap: 1, justifyContent: "center", flexWrap: "wrap", mb: 1.5 }}>
 						<Chip
-							label="Welcome Back Anytime! 🎰"
+							label="🎰 Same Time Next Year?"
 							color="primary"
-							size="small"
-							sx={{ mt: 1 }}
+							size="medium"
 						/>
 					</Box>
-				</StatsCard>
+					<Typography variant="caption" color="text.secondary">
+						📸 Screenshot & share your year!
+					</Typography>
+				</Box>
 			</Box>
 		</PageWithParticles>
 	);

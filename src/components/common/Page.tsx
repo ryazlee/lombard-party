@@ -110,7 +110,7 @@ export const PageWithParticles: React.FC<PageProps> = ({
 			return min + seededRandom * (max - min);
 		};
 
-		const particleCount = Math.floor(random(40, 150));
+		const particleCount = Math.floor(random(20, 50));
 		const speed = random(0.5, 4);
 		const colors = [
 			["#ff6b35", "#f7931e", "#fdc830"], // orange
@@ -145,7 +145,7 @@ export const PageWithParticles: React.FC<PageProps> = ({
 			colors: selectedColors,
 			shapes: selectedShapes,
 			linkDistance: random(80, 250),
-			linkOpacity: random(0.1, 0.6),
+			linkOpacity: random(0.05, 0.3),
 			linkWidth: random(0.5, 2.5),
 			sizeMin: random(1, 4),
 			sizeMax: random(4, 10),
@@ -187,30 +187,41 @@ export const PageWithParticles: React.FC<PageProps> = ({
 						events: {
 							onClick: {
 								enable: true,
-								mode: "push",
+								mode: ["push", "repulse"],
 							},
 							onHover: {
-								enable: true,
-								mode: ["grab", "bubble"],
+								enable: false,
 							},
 							resize: true,
 						},
 						modes: {
 							push: {
-								quantity: 4,
+								quantity: 8,
+							},
+							repulse: {
+								distance: 200,
+								duration: 0.4,
 							},
 							grab: {
-								distance: 140,
+								distance: 180,
 								links: {
-									opacity: 0.7,
-									color: "#ff6b35",
+									opacity: 0.9,
+									color: particleConfig.colors[0],
 								},
 							},
 							bubble: {
-								distance: 200,
-								size: 8,
+								distance: 250,
+								size: 12,
 								duration: 2,
-								opacity: 0.8,
+								opacity: 0.9,
+								mix: false,
+							},
+							connect: {
+								distance: 150,
+								links: {
+									opacity: 1,
+								},
+								radius: 150,
 							},
 						},
 					},
@@ -239,6 +250,15 @@ export const PageWithParticles: React.FC<PageProps> = ({
 								rotateX: particleConfig.attractRotateX,
 								rotateY: particleConfig.attractRotateY,
 							},
+							warp: true,
+							vibrate: true,
+							path: {
+								enable: true,
+								delay: {
+									value: 0,
+								},
+								options: {},
+							},
 						},
 						number: {
 							density: {
@@ -254,6 +274,8 @@ export const PageWithParticles: React.FC<PageProps> = ({
 								speed: 1,
 								minimumValue: particleConfig.opacityMin,
 								sync: false,
+								startValue: "random",
+								destroy: "none",
 							},
 						},
 						shape: {
@@ -266,6 +288,8 @@ export const PageWithParticles: React.FC<PageProps> = ({
 								speed: 3,
 								minimumValue: particleConfig.sizeMin,
 								sync: false,
+								startValue: "random",
+								destroy: "none",
 							},
 						},
 						rotate: {
@@ -277,6 +301,32 @@ export const PageWithParticles: React.FC<PageProps> = ({
 								speed: particleConfig.rotateSpeed,
 								sync: false,
 							},
+						},
+						wobble: {
+							distance: 15,
+							enable: true,
+							speed: {
+								angle: 8,
+								move: 5,
+							},
+						},
+						stroke: {
+							width: 0.5,
+							color: {
+								value: particleConfig.colors,
+								animation: {
+									enable: true,
+									speed: 20,
+									sync: false,
+								},
+							},
+						},
+						life: {
+							duration: {
+								value: 0,
+								sync: false,
+							},
+							count: 0,
 						},
 					},
 					detectRetina: true,
