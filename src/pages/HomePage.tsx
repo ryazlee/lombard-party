@@ -64,9 +64,6 @@ export const HomePage: React.FC = () => {
 			>
 				<LinkButton to="/wifi">WiFi Info</LinkButton>
 				<LinkButton to="/poker/stats">Poker Stats</LinkButton>
-				<LinkButton disabled to="/christmas-card">
-					2025 Christmas Card
-				</LinkButton>
 			</Box>
 		</PageWithParticles>
 	);
