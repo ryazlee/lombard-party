@@ -113,7 +113,7 @@ const baseColumns: GridColDef<PlayerStat>[] = [
 	},
 ];
 
-const PlayerSummaryTableDataGrid: React.FC<PlayerSummaryTableProps> = ({
+export const PlayerSummaryTable: React.FC<PlayerSummaryTableProps> = ({
 	playerStats,
 }) => {
 	const theme = useTheme();
@@ -181,5 +181,3 @@ const PlayerSummaryTableDataGrid: React.FC<PlayerSummaryTableProps> = ({
 		</>
 	);
 };
-
-export default PlayerSummaryTableDataGrid;

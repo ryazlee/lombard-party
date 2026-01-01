@@ -37,13 +37,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 		}
 	};
 
-	const parseDate = (dateStr: string) => {
-		const [month, day, year] = dateStr.split("/").map(Number);
-		const fullYear = year < 100 ? 2000 + year : year;
-		return new Date(fullYear, month - 1, day);
-	};
-
-	const playerData = new Map<string, { date: string; profit: number }[]>();
+	const playerData = new Map<string, { date: Date; profit: number }[]>();
 
 	sessions.forEach((session) => {
 		if (!playerData.has(session.player)) {
@@ -57,13 +51,13 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 
 	playerData.forEach((sessions) => {
 		sessions.sort(
-			(a, b) => parseDate(a.date).getTime() - parseDate(b.date).getTime()
+			(a, b) => a.date.getTime() - b.date.getTime()
 		);
 	});
 
 	const cumulativeData = new Map<
 		string,
-		{ date: string; cumulative: number }[]
+		{ date: Date; cumulative: number }[]
 	>();
 
 	playerData.forEach((sessions, player) => {
@@ -78,33 +72,36 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 		cumulativeData.set(player, cumData);
 	});
 
-	const allDates = Array.from(new Set(sessions.map((s) => s.date))).sort(
-		(a, b) => {
-			return parseDate(a).getTime() - parseDate(b).getTime();
-		}
-	);
+	// Get unique dates by timestamp
+	const uniqueDateTimes = Array.from(
+		new Set(sessions.map((s) => s.date.getTime()))
+	).sort((a, b) => a - b);
+
+	const allDates = uniqueDateTimes.map((time) => new Date(time));
 
 	const chartData = allDates.map((date) => {
 		const dataPoint: any = { date };
-		const dateTime = parseDate(date).getTime();
+		const dateTime = date.getTime();
 
 		cumulativeData.forEach((sessions, player) => {
 			const relevantSessions = sessions.filter(
-				(s) => parseDate(s.date).getTime() <= dateTime
+				(s) => s.date.getTime() <= dateTime
 			);
 			if (relevantSessions.length > 0) {
 				const lastSession =
 					relevantSessions[relevantSessions.length - 1];
-				if (lastSession.date === date) {
+				if (lastSession.date.getTime() === dateTime) {
 					dataPoint[player] = lastSession.cumulative;
 
-					const playerSession = sessions.find((s) => s.date === date);
+					const playerSession = sessions.find(
+						(s) => s.date.getTime() === dateTime
+					);
 					if (playerSession) {
 						const dayProfit =
 							playerSession.cumulative -
 							(relevantSessions.length > 1
 								? relevantSessions[relevantSessions.length - 2]
-										.cumulative
+									.cumulative
 								: 0);
 						dataPoint[`${player}_dayProfit`] = dayProfit;
 					}
@@ -174,6 +171,23 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 							allowDuplicatedCategory={false}
 							axisLine={true}
 							tickLine={true}
+							tickFormatter={(date) => {
+								if (date instanceof Date) {
+									const month = (date.getMonth() + 1)
+										.toString()
+										.padStart(2, "0");
+									const day = date
+										.getDate()
+										.toString()
+										.padStart(2, "0");
+									const year = date
+										.getFullYear()
+										.toString()
+										.slice(-2);
+									return `${month}/${day}/${year}`;
+								}
+								return date;
+							}}
 						/>
 						<YAxis
 							tick={{ fontSize: isMobile ? 10 : 12 }}
@@ -196,19 +210,19 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 									stroke={stringToColor(player)}
 									strokeWidth={
 										selectedPlayer === null ||
-										selectedPlayer === player
+											selectedPlayer === player
 											? 3
 											: 1.5
 									}
 									opacity={
 										selectedPlayer === null ||
-										selectedPlayer === player
+											selectedPlayer === player
 											? 1
 											: 0.15
 									}
 									dot={
 										selectedPlayer === null ||
-										selectedPlayer === player
+											selectedPlayer === player
 											? { r: 4, strokeWidth: 2 }
 											: { r: 2, strokeWidth: 1 }
 									}

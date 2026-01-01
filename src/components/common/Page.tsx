@@ -10,11 +10,13 @@ const particleSeed = Math.random();
 
 export interface PageProps {
 	title?: string;
+	rightAdornment?: React.ReactNode;
 	children: React.ReactNode;
 	maxWidth?: string | number;
 	showBackButton?: boolean;
 	centered?: boolean;
 	contentSx?: SxProps<Theme>;
+	transparentBg?: boolean;
 }
 
 /**
@@ -27,6 +29,8 @@ export const Page: React.FC<PageProps> = ({
 	showBackButton = true,
 	centered = false,
 	contentSx = {},
+	rightAdornment,
+	transparentBg = false,
 }) => {
 	const theme = useTheme();
 
@@ -34,7 +38,7 @@ export const Page: React.FC<PageProps> = ({
 		<Box
 			sx={{
 				minHeight: "100vh",
-				bgcolor: "#f3f4f6",
+				...(!transparentBg && { bgcolor: "#f3f4f6" }),
 				p: 2,
 				position: "relative",
 				...(centered && {
@@ -73,9 +77,9 @@ export const Page: React.FC<PageProps> = ({
 						variant="h4"
 						fontWeight="bold"
 						color="text.primary"
-						sx={{ mb: 3 }}
+						sx={{ mb: 3, display: "flex", alignItems: "center", justifyContent: "space-between" }}
 					>
-						{title}
+						{title} {rightAdornment}
 					</Typography>
 				)}
 
@@ -88,16 +92,7 @@ export const Page: React.FC<PageProps> = ({
 /**
  * Page wrapper component with animated particle background
  */
-export const PageWithParticles: React.FC<PageProps> = ({
-	title,
-	children,
-	maxWidth = "1200px",
-	showBackButton = true,
-	centered = false,
-	contentSx = {},
-}) => {
-	const theme = useTheme();
-
+export const PageWithParticles: React.FC<PageProps> = (props) => {
 	const particlesInit = useCallback(async (engine: Engine) => {
 		await loadSlim(engine);
 	}, []);
@@ -158,19 +153,7 @@ export const PageWithParticles: React.FC<PageProps> = ({
 	}, []); // Empty dependency array - only compute once per app load
 
 	return (
-		<Box
-			sx={{
-				minHeight: "100vh",
-				bgcolor: "#f3f4f6",
-				p: 2,
-				position: "relative",
-				...(centered && {
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "center",
-				}),
-			}}
-		>
+		<Box sx={{ position: "relative", minHeight: "100vh" }}>
 			<Particles
 				id="tsparticles"
 				init={particlesInit}
@@ -266,43 +249,7 @@ export const PageWithParticles: React.FC<PageProps> = ({
 					zIndex: 0,
 				}}
 			/>
-			<Box
-				sx={{
-					width: "100%",
-					maxWidth,
-					mx: "auto",
-					position: "relative",
-					zIndex: 1,
-					...contentSx,
-				}}
-			>
-				{showBackButton && (
-					<Box sx={{ mb: 2 }}>
-						<Link
-							to="/"
-							style={{
-								color: theme.palette.primary.main,
-								textDecoration: "none",
-							}}
-						>
-							← Back to Home
-						</Link>
-					</Box>
-				)}
-
-				{title && (
-					<Typography
-						variant="h4"
-						fontWeight="bold"
-						color="text.primary"
-						sx={{ mb: 3 }}
-					>
-						{title}
-					</Typography>
-				)}
-
-				{children}
-			</Box>
+			<Page {...props} transparentBg={true} />
 		</Box>
 	);
 };

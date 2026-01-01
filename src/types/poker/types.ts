@@ -1,5 +1,5 @@
 export interface PokerSession {
-	date: string;
+	date: Date;
 	player: string;
 	buyIn: number;
 	profit: number;

@@ -71,8 +71,11 @@ function parseSheetData(rows: string[][]): {
 					profitStr.replace(/[$,]/g, "") || "0"
 				);
 
+				const dateObj = new Date(date);
+				dateObj.setHours(0, 0, 0, 0);
+
 				sessions.push({
-					date,
+					date: dateObj,
 					player: playerName,
 					buyIn,
 					profit,
