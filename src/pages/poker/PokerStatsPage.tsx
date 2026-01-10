@@ -1,15 +1,15 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { fetchPokerStats, getPlayerStats } from "../../services/pokerService";
 import { PlayerSummaryTable } from "../../components/PokerStats/PlayerSummaryTable";
 import PerformanceChart from "../../components/PokerStats/PerformanceChart";
 import StatsCard from "../../components/PokerStats/StatsCard";
 import { PageWithParticles } from "../../components/common/Page";
-import { PlayerSummary, PokerSession } from "../../types/poker/types";
+import { QuerySpinner } from "../../components/common/QuerySpinner";
+import { QueryError } from "../../components/common/QueryError";
 import {
 	Box,
 	Typography,
-	CircularProgress,
-	Alert,
 	useTheme,
 	useMediaQuery,
 	Select,
@@ -20,31 +20,18 @@ import {
 
 export const PokerStatsPage: React.FC = () => {
 	const [selectedYear, setSelectedYear] = useState<number | "all">("all");
-	const [sessions, setSessions] = useState<PokerSession[]>([]);
-	const [playerSummaries, setPlayerSummaries] = useState<PlayerSummary[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
 
-	useEffect(() => {
-		const loadData = async () => {
-			try {
-				setLoading(true);
-				const data = await fetchPokerStats();
-				setSessions(data.sessions);
-				setPlayerSummaries(data.playerSummaries);
-				setError(null);
-			} catch (err) {
-				setError(
-					"Failed to load poker stats. Make sure the Google Sheet is publicly accessible and the API key is set."
-				);
-				console.error(err);
-			} finally {
-				setLoading(false);
-			}
-		};
+	const {
+		data,
+		isLoading,
+		error,
+	} = useQuery({
+		queryKey: ["pokerStats"],
+		queryFn: fetchPokerStats,
+	});
 
-		loadData();
-	}, []);
+	const sessions = data?.sessions ?? [];
+	const playerSummaries = data?.playerSummaries ?? [];
 
 	const yearOptions = useMemo(() => {
 		const yearsSet = new Set<number>();
@@ -94,38 +81,17 @@ export const PokerStatsPage: React.FC = () => {
 		}
 	}
 
-	if (loading) {
-		return (
-			<Box
-				sx={{
-					minHeight: "100vh",
-					bgcolor: "#f3f4f6",
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "center",
-					p: 2,
-				}}
-			>
-				<Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-					<CircularProgress size={24} />
-					<Typography variant="h6" color="text.secondary">
-						Loading poker stats...
-					</Typography>
-				</Box>
-			</Box>
-		);
+	if (isLoading) {
+		return <QuerySpinner message="Loading poker stats..." />;
 	}
 
 	if (error) {
 		return (
-			<PageWithParticles title="Poker Stats" maxWidth="900px">
-				<Alert severity="error">
-					<Typography component="p" fontWeight="bold">
-						Error
-					</Typography>
-					<Typography component="p">{error}</Typography>
-				</Alert>
-			</PageWithParticles>
+			<QueryError
+				title="Poker Stats"
+				message="Failed to load poker stats. Make sure the Google Sheet is publicly accessible and the API key is set."
+				error={error}
+			/>
 		);
 	}
 
