@@ -8,10 +8,11 @@ import {
 	Tooltip,
 	Legend,
 	ResponsiveContainer,
+	ReferenceLine,
 } from "recharts";
 import { PokerSession } from "../../types/poker/types";
 import { stringToColor } from "./utils";
-import { Box, Typography, useTheme, useMediaQuery } from "@mui/material";
+import { Box, Typography, useTheme, useMediaQuery, Chip } from "@mui/material";
 
 interface PerformanceChartProps {
 	sessions: PokerSession[];
@@ -20,22 +21,11 @@ interface PerformanceChartProps {
 const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+	const isTablet = useMediaQuery(theme.breakpoints.down("md"));
 
-	const [hiddenPlayers, setHiddenPlayers] = React.useState<Set<string>>(
-		new Set()
-	);
 	const [selectedPlayer, setSelectedPlayer] = React.useState<string | null>(
 		null
 	);
-
-	const handleLegendClick = (data: any) => {
-		const playerName = data.value;
-		if (selectedPlayer === playerName) {
-			setSelectedPlayer(null);
-		} else {
-			setSelectedPlayer(playerName);
-		}
-	};
 
 	const playerData = new Map<string, { date: Date; profit: number }[]>();
 
@@ -112,126 +102,261 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 		return dataPoint;
 	});
 
-	const tooltipFormatter = (value: number, name: string, props: any) => {
-		const dayProfit = props.payload[`${name}_dayProfit`];
-		if (dayProfit !== undefined) {
-			const sign = dayProfit >= 0 ? "+" : "";
-			return `$${value.toFixed(2)} (${sign}$${dayProfit.toFixed(2)})`;
-		}
-		return `$${value.toFixed(2)}`;
+	// Custom tooltip component - clean single-line format per player
+	const CustomTooltip = ({ active, payload, label }: any) => {
+		if (!active || !payload || payload.length === 0) return null;
+
+		const date = label instanceof Date ? label.toLocaleDateString("en-US", {
+			month: "short",
+			day: "numeric",
+		}) : label;
+
+		// Sort by cumulative value descending
+		const sortedPayload = [...payload].sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
+
+		return (
+			<Box
+				sx={{
+					bgcolor: "rgba(255, 255, 255, 0.95)",
+					border: "1px solid #ddd",
+					borderRadius: 1,
+					boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+					p: 1,
+					fontSize: 12,
+				}}
+			>
+				<Typography variant="caption" fontWeight="bold" sx={{ mb: 0.5, display: "block" }}>
+					{date}
+				</Typography>
+				{sortedPayload.map((entry: any) => {
+					const dayProfit = entry.payload[`${entry.name}_dayProfit`];
+					const total = entry.value ?? 0;
+					const daySign = dayProfit >= 0 ? "+" : "";
+					const totalSign = total >= 0 ? "+" : "";
+
+					return (
+						<Box key={entry.name} sx={{ display: "flex", alignItems: "center", gap: 0.5, py: 0.25 }}>
+							<Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: entry.stroke, flexShrink: 0 }} />
+							<Typography variant="caption" sx={{ fontWeight: 500 }}>
+								{entry.name}:
+							</Typography>
+							{dayProfit !== undefined && (
+								<Typography variant="caption" sx={{ color: dayProfit >= 0 ? "success.main" : "error.main" }}>
+									{daySign}${dayProfit.toFixed(0)}
+								</Typography>
+							)}
+							<Typography variant="caption" sx={{ color: "text.secondary" }}>
+								({totalSign}${total.toFixed(0)})
+							</Typography>
+						</Box>
+					);
+				})}
+			</Box>
+		);
 	};
 
 	const players = Array.from(playerData.keys()).sort();
 
-	// Apply mobile friendly logic to chart height
-	const chartHeight = isMobile ? 400 : 700;
-	// Adjust XAxis angle and height for mobile
-	const xAxisAngle = isMobile ? -90 : -45;
-	const xAxisHeight = isMobile ? 100 : 80;
-	const xAxisInterval = isMobile ? "preserveStart" : 0;
-	const tickFontSize = isMobile ? 8 : 12;
+	// Responsive chart configuration - unified approach
+	const chartHeight = isMobile ? 500 : isTablet ? 550 : 600;
+
+	// Show fewer x-axis labels on smaller screens for readability
+	const getXAxisInterval = () => {
+		const totalDates = allDates.length;
+		if (isMobile) {
+			// Show ~5-6 labels on mobile
+			return Math.max(1, Math.floor(totalDates / 5));
+		}
+		if (isTablet) {
+			// Show ~8-10 labels on tablet
+			return Math.max(1, Math.floor(totalDates / 8));
+		}
+		// Desktop: show all or reasonable amount
+		return totalDates > 20 ? Math.floor(totalDates / 15) : 0;
+	};
 
 	return (
 		<>
-			<Box
-				sx={{
-					px: isMobile ? 2 : 3,
-				}}
-			>
+			<Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
 				<Typography
-					variant={isMobile ? "h5" : "h4"}
+					variant="h5"
 					component="h2"
 					align="center"
 					fontWeight="bold"
-					sx={{ mb: isMobile ? 2 : 4 }}
+					sx={{
+						mb: 0.5,
+						fontSize: { xs: "1.25rem", sm: "1.5rem", md: "1.75rem" }
+					}}
 				>
-					Performance Over Time
+					📈 Performance Over Time
+				</Typography>
+				<Typography
+					variant="body2"
+					align="center"
+					color="text.secondary"
+					sx={{ mb: { xs: 1, md: 2 } }}
+				>
+					Cumulative profit/loss over {allDates.length} sessions
 				</Typography>
 			</Box>
 
-			<Box sx={{ p: isMobile ? 2 : 3 }}>
-				<ResponsiveContainer width="100%" height={chartHeight}>
-					<LineChart
-						data={chartData}
-						margin={{
-							top: 5,
-							right: 10,
-							bottom: isMobile ? 5 : 10,
-						}}
-					>
-						<CartesianGrid strokeDasharray="3 3" />
-						<XAxis
-							dataKey="date"
-							angle={xAxisAngle}
-							textAnchor="end"
-							height={xAxisHeight}
-							tick={{ fontSize: tickFontSize }}
-							interval={xAxisInterval}
-							type="category"
-							allowDuplicatedCategory={false}
-							axisLine={true}
-							tickLine={true}
-							tickFormatter={(date) => {
-								if (date instanceof Date) {
-									const month = (date.getMonth() + 1)
-										.toString()
-										.padStart(2, "0");
-									const day = date
-										.getDate()
-										.toString()
-										.padStart(2, "0");
-									const year = date
-										.getFullYear()
-										.toString()
-										.slice(-2);
-									return `${month}/${day}/${year}`;
-								}
-								return date;
+			<Box
+				sx={{
+					px: { xs: 0, sm: 1, md: 2 },
+					pb: { xs: 1, md: 2 },
+				}}
+			>
+				<Box sx={{ width: "100%" }}>
+					<ResponsiveContainer width="100%" height={chartHeight}>
+						<LineChart
+							data={chartData}
+							margin={{
+								top: 10,
+								right: isMobile ? 10 : 20,
+								bottom: 10,
+								left: isMobile ? -10 : 0,
 							}}
-						/>
-						<YAxis
-							tick={{ fontSize: isMobile ? 10 : 12 }}
-							type="number"
-							tickFormatter={(value) => `$${value}`}
-						/>
-						{!isMobile && <Tooltip formatter={tooltipFormatter} />}
-						<Legend
-							onClick={handleLegendClick}
-							iconType="circle"
-							wrapperStyle={{ fontSize: isMobile ? 10 : 12 }}
-						/>
-						{players
-							.filter((player) => !hiddenPlayers.has(player))
-							.map((player) => (
+						>
+							<CartesianGrid strokeDasharray="3 3" opacity={0.6} />
+							<ReferenceLine
+								y={0}
+								stroke="#666"
+								strokeWidth={1.5}
+								strokeDasharray="4 4"
+							/>
+							<XAxis
+								dataKey="date"
+								angle={-45}
+								textAnchor="end"
+								height={70}
+								tick={{ fontSize: isMobile ? 10 : 12 }}
+								interval={getXAxisInterval()}
+								type="category"
+								allowDuplicatedCategory={false}
+								tickFormatter={(date) => {
+									if (date instanceof Date) {
+										// Shorter format for mobile
+										const month = (date.getMonth() + 1).toString();
+										const day = date.getDate().toString();
+										return `${month}/${day}`;
+									}
+									return date;
+								}}
+							/>
+							<YAxis
+								type="number"
+								width={isMobile ? 50 : 65}
+								tick={({ x, y, payload }: any) => {
+									const value = payload.value;
+									const isPositive = value >= 0;
+									const color = value === 0 ? "#666" : isPositive ? "#2e7d32" : "#d32f2f";
+									const formatted = Math.abs(value) >= 1000
+										? `$${(value / 1000).toFixed(1)}k`
+										: `$${value}`;
+									return (
+										<text
+											x={x}
+											y={y}
+											textAnchor="end"
+											fill={color}
+											fontSize={isMobile ? 10 : 12}
+											fontWeight={value === 0 ? 600 : 400}
+											dy={4}
+										>
+											{formatted}
+										</text>
+									);
+								}}
+							/>
+							{!isMobile && (
+								<Tooltip
+									content={<CustomTooltip />}
+									cursor={{ strokeDasharray: "3 3", stroke: "#999" }}
+								/>
+							)}
+							<Legend
+								content={({ payload }) => (
+									<Box
+										sx={{
+											display: "flex",
+											flexWrap: "wrap",
+											justifyContent: "center",
+											gap: { xs: "6px 14px", sm: "8px 20px" },
+											pt: 2,
+											px: 1,
+										}}
+									>
+										{payload?.map((entry: any) => (
+											<Box
+												key={entry.value}
+												onClick={() => {
+													if (selectedPlayer === entry.value) {
+														setSelectedPlayer(null);
+													} else {
+														setSelectedPlayer(entry.value);
+													}
+												}}
+												sx={{
+													display: "flex",
+													alignItems: "center",
+													gap: 0.5,
+													cursor: "pointer",
+													opacity: selectedPlayer && selectedPlayer !== entry.value ? 0.4 : 1,
+													transition: "opacity 0.2s ease",
+												}}
+											>
+												<Box
+													sx={{
+														width: isMobile ? 10 : 12,
+														height: isMobile ? 10 : 12,
+														borderRadius: "50%",
+														bgcolor: entry.color,
+													}}
+												/>
+												<Typography
+													variant="body2"
+													sx={{
+														fontSize: isMobile ? 12 : 14,
+														fontWeight: selectedPlayer === entry.value ? 700 : 500,
+														textDecoration: selectedPlayer === entry.value ? "underline" : "none",
+													}}
+												>
+													{entry.value}
+												</Typography>
+											</Box>
+										))}
+									</Box>
+								)}
+							/>
+							{players.map((player) => (
 								<Line
 									key={player}
 									type="monotone"
 									dataKey={player}
 									stroke={stringToColor(player)}
 									strokeWidth={
-										selectedPlayer === null ||
-											selectedPlayer === player
-											? 3
-											: 1.5
+										selectedPlayer === null || selectedPlayer === player
+											? isMobile ? 2 : 2.5
+											: 1
 									}
 									opacity={
-										selectedPlayer === null ||
-											selectedPlayer === player
+										selectedPlayer === null || selectedPlayer === player
 											? 1
-											: 0.15
+											: 0.2
 									}
-									dot={
-										selectedPlayer === null ||
-											selectedPlayer === player
-											? { r: 4, strokeWidth: 2 }
-											: { r: 2, strokeWidth: 1 }
-									}
-									activeDot={{ r: 6 }}
+									dot={{
+										r: selectedPlayer === null || selectedPlayer === player
+											? (isMobile ? 3 : 4)
+											: 2,
+										strokeWidth: 1,
+									}}
+									activeDot={{ r: isMobile ? 6 : 7 }}
 									connectNulls={true}
 								/>
 							))}
-					</LineChart>
-				</ResponsiveContainer>
+						</LineChart>
+					</ResponsiveContainer>
+				</Box>
 			</Box>
 		</>
 	);

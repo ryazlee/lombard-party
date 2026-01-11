@@ -122,7 +122,7 @@ const PokerStatsYearSelector: React.FC<{
 	return (
 		<FormControl
 			sx={{
-				minWidth: isMobile ? 200 : 250,
+				minWidth: 150,
 				bgcolor: "white",
 				borderRadius: 1,
 			}}
