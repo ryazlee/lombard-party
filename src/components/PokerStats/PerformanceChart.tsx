@@ -143,10 +143,11 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 		legend: {
 			show: true,
 			position: "bottom",
-			fontSize: isMobile ? "11px" : "13px",
-			itemMargin: { horizontal: isMobile ? 5 : 10, vertical: 5 },
+			fontSize: isMobile ? "9px" : "13px",
+			itemMargin: { horizontal: isMobile ? 3 : 10, vertical: isMobile ? 2 : 5 },
 			onItemHover: { highlightDataSeries: false },
 			onItemClick: { toggleDataSeries: false },
+			height: isMobile ? 150 : undefined,
 		},
 		tooltip: {
 			enabled: true,
@@ -253,7 +254,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 				options={options}
 				series={series}
 				type="line"
-				height={isMobile ? 320 : 500}
+				height={isMobile ? 400 : 500}
 			/>
 		</Box>
 	);

@@ -138,7 +138,7 @@ export const PlayerSummaryTable: React.FC<PlayerSummaryTableProps> = ({
 
 			<Box
 				sx={{
-					height: isMobile ? 450 : 600,
+					height: isMobile ? 550 : 600,
 					width: "100%",
 					mx: "auto",
 					maxWidth: 1200,
