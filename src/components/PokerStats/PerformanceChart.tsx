@@ -187,7 +187,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 					📈 Performance
 				</Typography>
 				<Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: -0.5 }}>
-					{`Over ${sessions.length} Sessions`}
+					{`Over ${allDates.length} Sessions`}
 				</Typography>
 			</Box>
 
