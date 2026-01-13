@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/lombard-party/static/css/main.86a8b30b.css",
-    "main.js": "/lombard-party/static/js/main.ccb0d623.js",
+    "main.js": "/lombard-party/static/js/main.9cd6ec6f.js",
     "static/js/453.d6066025.chunk.js": "/lombard-party/static/js/453.d6066025.chunk.js",
     "index.html": "/lombard-party/index.html",
     "main.86a8b30b.css.map": "/lombard-party/static/css/main.86a8b30b.css.map",
-    "main.ccb0d623.js.map": "/lombard-party/static/js/main.ccb0d623.js.map",
+    "main.9cd6ec6f.js.map": "/lombard-party/static/js/main.9cd6ec6f.js.map",
     "453.d6066025.chunk.js.map": "/lombard-party/static/js/453.d6066025.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.86a8b30b.css",
-    "static/js/main.ccb0d623.js"
+    "static/js/main.9cd6ec6f.js"
   ]
 }
