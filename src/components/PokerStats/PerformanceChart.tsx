@@ -154,12 +154,69 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
 			intersect: true,
 			theme: "light",
 			style: { fontSize: isMobile ? "10px" : "12px" },
-			y: {
-				formatter: (val, { seriesIndex, dataPointIndex, w }) => {
-					const dayProfit = w.config.series[seriesIndex].data[dataPointIndex].dayProfit;
+			fillSeriesColor: false,
+			followCursor: true,
+			x: {
+				show: false
+			},
+			custom: ({ series, seriesIndex, dataPointIndex, w }) => {
+				if (dataPointIndex === undefined || dataPointIndex < 0 || seriesIndex === undefined) return '';
+
+				// Get the actual x value (date index) from the data point
+				const xValue = w.config.series[seriesIndex].data[dataPointIndex]?.x;
+				if (xValue === undefined || xValue < 0 || xValue >= allDates.length) return '';
+
+				const date = allDates[xValue];
+				const dateStr = date.toLocaleDateString("en-US", {
+					month: "short",
+					day: "numeric",
+					year: "numeric"
+				});
+
+				// Get all sessions for this specific date
+				const daySessionsMap = new Map();
+				sessions.forEach(session => {
+					if (session.date.getTime() === date.getTime()) {
+						daySessionsMap.set(session.player, session.profit);
+					}
+				});
+
+				// Only show players who actually played that day
+				if (daySessionsMap.size === 0) return '';
+
+				let tooltipContent = `
+					<div style="padding: 8px; background: white; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+						<div style="font-weight: bold; margin-bottom: 6px; color: #333;">${dateStr}</div>
+				`;
+
+				// Show only players who played this day
+				Array.from(daySessionsMap.entries()).forEach(([player, dayProfit]) => {
+					const playerIndex = players.indexOf(player);
+					const playerColor = stringToColor(player);
 					const sign = dayProfit >= 0 ? "+" : "";
-					return `${sign}$${dayProfit} (${val >= 0 ? "+" : ""}$${Math.round(val)} total)`;
-				}
+					const profitColor = dayProfit >= 0 ? "#22c55e" : "#ef4444"; // Green for positive, red for negative
+
+					// Find the cumulative total for this player on this date
+					let cumulativeTotal = 0;
+					if (playerIndex >= 0) {
+						const playerData = w.config.series[playerIndex]?.data;
+						const dataPoint: { x: number; y: number; dayProfit: number } | undefined = playerData?.find((d: { x: number; y: number; dayProfit: number }) => d.x === xValue);
+						cumulativeTotal = dataPoint?.y || 0;
+					}
+
+					tooltipContent += `
+						<div style="margin: 2px 0; display: flex; align-items: center;">
+							<span style="width: 12px; height: 12px; background: ${playerColor}; border-radius: 2px; margin-right: 6px; display: inline-block;"></span>
+							<span style="font-size: ${isMobile ? '10px' : '11px'};">
+								<strong>${player}:</strong> <span style="color: ${profitColor}; font-weight: bold;">${sign}$${dayProfit.toFixed(2)}</span>
+								<span style="color: #666; font-size: ${isMobile ? '9px' : '10px'};">(${cumulativeTotal >= 0 ? "+" : ""}$${Number(cumulativeTotal).toFixed(2)})</span>
+							</span>
+						</div>
+					`;
+				});
+
+				tooltipContent += '</div>';
+				return tooltipContent;
 			}
 		},
 		markers: {
