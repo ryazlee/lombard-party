@@ -31,7 +31,6 @@ export const PokerStatsPage: React.FC = () => {
 	});
 
 	const sessions = data?.sessions ?? [];
-	const playerSummaries = data?.playerSummaries ?? [];
 
 	const yearOptions = useMemo(() => {
 		const yearsSet = new Set<number>();
@@ -49,8 +48,8 @@ export const PokerStatsPage: React.FC = () => {
 	}, [sessions, selectedYear]);
 
 	const playerStats = useMemo(() => {
-		return getPlayerStats(filteredSessions, playerSummaries);
-	}, [filteredSessions, playerSummaries]);
+		return getPlayerStats(filteredSessions);
+	}, [filteredSessions]);
 
 	const renderContent = () => {
 		if (filteredSessions.length === 0) {

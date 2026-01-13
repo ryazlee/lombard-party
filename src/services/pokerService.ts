@@ -89,7 +89,6 @@ function parseSheetData(rows: string[][]): {
 
 export const getPlayerStats = (
 	sessions: PokerSession[],
-	summaries: PlayerSummary[]
 ): PlayerStat[] => {
 	const playerMap = new Map<
 		string,
@@ -121,12 +120,10 @@ export const getPlayerStats = (
 	});
 
 	return Array.from(playerMap.entries()).map(([player, stats]) => {
-		const summary = summaries.find((s) => s.player === player);
-
 		return {
 			player,
 			...stats,
-			totalWinnings: summary?.totalWinnings || stats.totalProfit,
+			totalWinnings: stats.totalProfit, 
 			avgProfit: stats.totalProfit / stats.sessions,
 			roi:
 				stats.totalBuyIn > 0

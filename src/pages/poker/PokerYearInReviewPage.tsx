@@ -11,7 +11,6 @@ import {
 	CircularProgress,
 	useTheme,
 	Chip,
-	Button,
 } from "@mui/material";
 import html2canvas from "html2canvas";
 
@@ -36,7 +35,6 @@ export const PokerYearInReviewPage: React.FC = () => {
 				const rawStats = await fetchPokerStats();
 				const stats = getPlayerStats(
 					rawStats.sessions,
-					rawStats.playerSummaries
 				);
 
 				// iterate through stats to find current user
