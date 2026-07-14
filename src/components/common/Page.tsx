@@ -106,7 +106,6 @@ export const PageWithParticles: React.FC<PageProps> = (props) => {
 		};
 
 		const particleCount = Math.floor(random(20, 50));
-		const speed = random(0.5, 4);
 		const colors = [
 			["#ff6b35", "#f7931e", "#fdc830"], // orange
 			["#667eea", "#764ba2", "#f093fb"], // purple
