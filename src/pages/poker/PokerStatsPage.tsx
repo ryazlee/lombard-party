@@ -1,12 +1,13 @@
 import React, { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { fetchPokerStats, getPlayerStats } from "../../services/pokerService";
 import { PlayerSummaryTable } from "../../components/PokerStats/PlayerSummaryTable";
 import PerformanceChart from "../../components/PokerStats/PerformanceChart";
 import StatsCard from "../../components/PokerStats/StatsCard";
 import { PageWithParticles } from "../../components/common/Page";
 import { QuerySpinner } from "../../components/common/QuerySpinner";
 import { QueryError } from "../../components/common/QueryError";
+import { useServices } from "../../context/ServicesContext";
+import { usePokerStats } from "../../hooks/usePokerStats";
+import type { YearFilter } from "../../types/poker/types";
 import {
 	Box,
 	Typography,
@@ -19,66 +20,58 @@ import {
 } from "@mui/material";
 
 export const PokerStatsPage: React.FC = () => {
-	const [selectedYear, setSelectedYear] = useState<number | "all">("all");
+	const { pokerService } = useServices();
+	const [selectedYear, setSelectedYear] = useState<YearFilter>("all");
 
-	const {
-		data,
-		isLoading,
-		error,
-	} = useQuery({
-		queryKey: ["pokerStats"],
-		queryFn: fetchPokerStats,
-	});
+	const { data, isLoading, error } = usePokerStats();
 
-	const sessions = data?.sessions ?? [];
+	const sessions = useMemo(() => data?.sessions ?? [], [data?.sessions]);
 
-	const yearOptions = useMemo(() => {
-		const yearsSet = new Set<number>();
-		sessions.forEach((s) => {
-			yearsSet.add(s.date.getFullYear());
-		});
-		return ["all" as const, ...Array.from(yearsSet).sort((a, b) => b - a)] as (number | "all")[];
-	}, [sessions]);
+	const yearOptions = useMemo(
+		() =>
+			["all" as const, ...pokerService.getAvailableYears(sessions)] as YearFilter[],
+		[pokerService, sessions]
+	);
 
-	const filteredSessions = useMemo(() => {
-		if (selectedYear === "all") {
-			return sessions;
-		}
-		return sessions.filter((s) => s.date.getFullYear() === selectedYear);
-	}, [sessions, selectedYear]);
+	const filteredSessions = useMemo(
+		() => pokerService.filterSessionsByYear(sessions, selectedYear),
+		[pokerService, sessions, selectedYear]
+	);
 
-	const playerStats = useMemo(() => {
-		return getPlayerStats(filteredSessions);
-	}, [filteredSessions]);
+	const playerStats = useMemo(
+		() => pokerService.getPlayerStats(filteredSessions),
+		[pokerService, filteredSessions]
+	);
 
 	const renderContent = () => {
 		if (filteredSessions.length === 0) {
 			return (
 				<Typography variant="body1" color="text.secondary">
-					No poker sessions found for {selectedYear === "all" ? "all years" : selectedYear}, try a different year.
+					No poker sessions found for{" "}
+					{selectedYear === "all" ? "all years" : selectedYear}, try a
+					different year.
 				</Typography>
 			);
-		} else {
-			return (
-				<Box
-					sx={{
-						display: "flex",
-						flexDirection: "column",
-						gap: 4,
-					}}
-				>
-					{/* Performance Chart */}
-					<StatsCard>
-						<PerformanceChart sessions={filteredSessions} />
-					</StatsCard>
-
-					{/* Player Summary */}
-					<StatsCard>
-						<PlayerSummaryTable playerStats={playerStats} />
-					</StatsCard>
-				</Box>)
 		}
-	}
+
+		return (
+			<Box
+				sx={{
+					display: "flex",
+					flexDirection: "column",
+					gap: 4,
+				}}
+			>
+				<StatsCard>
+					<PerformanceChart sessions={filteredSessions} />
+				</StatsCard>
+
+				<StatsCard>
+					<PlayerSummaryTable playerStats={playerStats} />
+				</StatsCard>
+			</Box>
+		);
+	};
 
 	if (isLoading) {
 		return <QuerySpinner message="Loading poker stats..." />;
@@ -95,27 +88,29 @@ export const PokerStatsPage: React.FC = () => {
 	}
 
 	return (
-		<PageWithParticles title="Poker Stats" rightAdornment={
-			<PokerStatsYearSelector
-				yearOptions={yearOptions}
-				selectedYear={selectedYear}
-				onYearChange={setSelectedYear}
-			/>
-		}>
+		<PageWithParticles
+			title="Poker Stats"
+			rightAdornment={
+				<PokerStatsYearSelector
+					yearOptions={yearOptions}
+					selectedYear={selectedYear}
+					onYearChange={setSelectedYear}
+				/>
+			}
+		>
 			{renderContent()}
 		</PageWithParticles>
 	);
 };
 
 const PokerStatsYearSelector: React.FC<{
-	yearOptions: (number | "all")[];
-	selectedYear: number | "all";
-	onYearChange: (year: number | "all") => void;
+	yearOptions: YearFilter[];
+	selectedYear: YearFilter;
+	onYearChange: (year: YearFilter) => void;
 }> = ({ yearOptions, selectedYear, onYearChange }) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-	// Filter out "all" from yearOptions since it has its own MenuItem
 	const years = yearOptions.filter((year): year is number => year !== "all");
 
 	return (
@@ -147,4 +142,4 @@ const PokerStatsYearSelector: React.FC<{
 			</Select>
 		</FormControl>
 	);
-}
+};

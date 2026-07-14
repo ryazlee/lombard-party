@@ -21,3 +21,9 @@ export interface PlayerStat {
 	highestSingleWinning: number;
 	player: string;
 }
+
+export type YearFilter = number | "all";
+
+export interface PlayerYearInReview extends PlayerStat {
+	winRate: number;
+}

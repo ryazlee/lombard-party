@@ -29,7 +29,7 @@ Your apartment hub for poker stats and more.
 4. **Make your Google Sheet accessible**:
    - Open your Google Sheet
    - Click "Share" → Change to "Anyone with the link can view"
-   - Update the `SHEET_ID` in `src/services/pokerService.ts` if needed
+   - Update the `SHEET_ID` in `src/services/store/PokerStore.ts` if needed
 
 ## Available Scripts
 

@@ -1,39 +1,30 @@
 const API_KEY = process.env.REACT_APP_GOOGLE_SHEETS_API_KEY || "";
 
-export interface GoogleSheetConfig {
+export type GoogleSheetConfig = {
 	sheetId: string;
 	sheetName: string;
-}
-
-/**
- * Fetches data from a Google Sheet using either CSV export (public) or API key
- */
-export const fetchSheetData = async (
-	config: GoogleSheetConfig
-): Promise<string[][]> => {
-	const { sheetId, sheetName } = config;
-
-	try {
-		// If no API key, use public CSV export
-		if (!API_KEY) {
-			return await fetchSheetDataViaCsv(sheetId, sheetName);
-		}
-
-		// Using Google Sheets API v4 with API key
-		return await fetchSheetDataViaApi(sheetId, sheetName);
-	} catch (error) {
-		console.error("Error fetching sheet data:", error);
-		throw error;
-	}
 };
 
 /**
- * Fetches sheet data via public CSV export
+ * Low-level Google Sheets transport used by stores.
+ * Prefer CSV export when no API key is configured (public sheets).
  */
-const fetchSheetDataViaCsv = async (
+export async function fetchSheetRows(
+	config: GoogleSheetConfig
+): Promise<string[][]> {
+	const { sheetId, sheetName } = config;
+
+	if (!API_KEY) {
+		return fetchSheetDataViaCsv(sheetId, sheetName);
+	}
+
+	return fetchSheetDataViaApi(sheetId, sheetName);
+}
+
+async function fetchSheetDataViaCsv(
 	sheetId: string,
 	sheetName: string
-): Promise<string[][]> => {
+): Promise<string[][]> {
 	const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${sheetName}`;
 	const response = await fetch(csvUrl);
 
@@ -45,15 +36,12 @@ const fetchSheetDataViaCsv = async (
 
 	const csvText = await response.text();
 	return parseCsv(csvText);
-};
+}
 
-/**
- * Fetches sheet data via Google Sheets API v4
- */
-const fetchSheetDataViaApi = async (
+async function fetchSheetDataViaApi(
 	sheetId: string,
 	sheetName: string
-): Promise<string[][]> => {
+): Promise<string[][]> {
 	const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetName}?key=${API_KEY}`;
 	const response = await fetch(url);
 
@@ -69,14 +57,11 @@ const fetchSheetDataViaApi = async (
 	}
 
 	return rows;
-};
+}
 
-/**
- * Parses CSV text into a 2D array of strings
- */
-const parseCsv = (csvText: string): string[][] => {
+function parseCsv(csvText: string): string[][] {
 	const lines = csvText.split("\n");
-	const rows = lines.map((line) => {
+	return lines.map((line) => {
 		const cells: string[] = [];
 		let currentCell = "";
 		let inQuotes = false;
@@ -95,6 +80,4 @@ const parseCsv = (csvText: string): string[][] => {
 		cells.push(currentCell.trim());
 		return cells;
 	});
-
-	return rows;
-};
+}

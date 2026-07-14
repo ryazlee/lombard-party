@@ -1,15 +1,7 @@
 import React from "react";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { Box, Typography, useTheme, useMediaQuery } from "@mui/material";
-
-interface PlayerStat {
-	player: string;
-	sessions: number;
-	totalWinnings: number;
-	avgProfit: number; // Average Winnings/Profit per session
-	roi: number; // Return on Investment (Avg Weighted Average Performance)
-	highestSingleWinning: number; // Highest single score
-}
+import type { PlayerStat } from "../../types/poker/types";
 
 interface PlayerSummaryTableProps {
 	playerStats: PlayerStat[];
