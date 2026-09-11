@@ -335,6 +335,7 @@ a {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
+  overflow: hidden;
 }
 
 .surface-card__body {
@@ -723,6 +724,7 @@ a {
 
 .stats-summary-card {
   position: relative;
+  overflow: visible;
 }
 
 .stats-summary-card .surface-card__header {
@@ -955,12 +957,20 @@ a {
 }
 
 .chart-frame {
+  min-width: 0;
   min-height: 0;
+  overflow-x: clip;
 }
 
 .chart-plot {
   position: relative;
   height: 380px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.chart-plot svg {
+  overflow: hidden;
 }
 
 .chart-legend {

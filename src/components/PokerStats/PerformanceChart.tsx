@@ -47,6 +47,13 @@ export default function PerformanceChart({
     [focused, focusPlayers, allPlayers],
   )
 
+  const legendPlayers = useMemo(() => {
+    if (!focused) return allPlayers
+    const selected = focusPlayers.filter((player) => allPlayers.includes(player))
+    const selectedSet = new Set(selected)
+    return [...selected, ...allPlayers.filter((player) => !selectedSet.has(player))]
+  }, [focused, focusPlayers, allPlayers])
+
   const seriesPlayers = useMemo(() => {
     if (
       hoveredPlayer &&
@@ -116,6 +123,9 @@ export default function PerformanceChart({
       foreColor: tokens.muted,
       toolbar: { show: false },
       zoom: { enabled: false },
+      parentHeightOffset: 0,
+      offsetX: 0,
+      offsetY: 0,
       animations: hovering
         ? {
             enabled: false,
@@ -250,9 +260,10 @@ export default function PerformanceChart({
       xaxis: { lines: { show: false } },
       yaxis: { lines: { show: true } },
       padding: {
+        top: isMobile ? 10 : 14,
         left: isMobile ? 4 : 8,
-        right: isMobile ? 8 : 12,
-        bottom: isMobile ? 0 : 8,
+        right: isMobile ? 12 : 18,
+        bottom: isMobile ? 4 : 8,
       },
     },
   }
@@ -260,10 +271,17 @@ export default function PerformanceChart({
   return (
     <div className="chart-frame">
       <div className="chart-plot" style={{ height: chartHeight }}>
-        <Chart key={theme} options={options} series={series} type="line" height={chartHeight} />
+        <Chart
+          key={theme}
+          options={options}
+          series={series}
+          type="line"
+          width="100%"
+          height={chartHeight}
+        />
       </div>
       <div className="chart-legend chip-row" role="group" aria-label="Filter people on the graph">
-        {allPlayers.map((player) => {
+        {legendPlayers.map((player) => {
           const active = focused && focusPlayers.includes(player)
           const hovered = hoveredPlayer === player
           return (

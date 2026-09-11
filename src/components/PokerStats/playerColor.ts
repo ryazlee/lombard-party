@@ -26,9 +26,11 @@ export function withAlpha(hsl: string, alpha: number): string {
 
 function colorFromName(name: string): string {
   const hash = hashName(name)
-  const hue = hash % 360
-  const sat = 52 + (hash % 5) * 5
-  const light = 38 + ((hash >>> 8) % 6) * 3
+  // Golden-angle step so nearby hashes don't land in neighboring hues.
+  const hue = (hash * 137.508) % 360
+  // Independent bits + wider readable bands (avoid muddy gray and neon).
+  const sat = 50 + ((hash >>> 11) % 26)
+  const light = 38 + ((hash >>> 21) % 15)
   return `hsl(${hue} ${sat}% ${light}%)`
 }
 
