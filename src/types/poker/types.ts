@@ -1,29 +1,29 @@
 export interface PokerSession {
-	date: Date;
-	player: string;
-	buyIn: number;
-	profit: number;
+  date: Date
+  player: string
+  buyIn: number
+  profit: number
 }
 
 export interface PlayerSummary {
-	player: string;
-	totalWinnings: number;
-	sessionCount: number;
+  player: string
+  totalWinnings: number
+  sessionCount: number
 }
 
 export interface PlayerStat {
-	totalWinnings: number;
-	avgProfit: number;
-	roi: number;
-	totalProfit: number;
-	sessions: number;
-	totalBuyIn: number;
-	highestSingleWinning: number;
-	player: string;
+  totalWinnings: number
+  avgProfit: number
+  roi: number
+  totalProfit: number
+  sessions: number
+  totalBuyIn: number
+  highestSingleWinning: number
+  player: string
 }
 
-export type YearFilter = number | "all";
+export type YearFilter = number | 'all'
 
 export interface PlayerYearInReview extends PlayerStat {
-	winRate: number;
+  winRate: number
 }

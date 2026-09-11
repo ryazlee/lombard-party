@@ -1,40 +1,64 @@
-import { HashRouter as Router, Routes, Route } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ServicesProvider } from "./context/ServicesContext";
-import { HomePage } from "./pages/HomePage";
-import { PokerStatsPage } from "./pages/poker/PokerStatsPage";
-import { ChristmasCardPage } from "./pages/ChristmasCardPage";
-import { WifiPage } from "./pages/WifiPage";
-import { PokerYearInReviewPage } from "./pages/poker/PokerYearInReviewPage";
+import { useEffect } from 'react'
+import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { ThemeProvider } from './theme'
+import { ServicesProvider } from './context/ServicesContext'
+import { queryClient } from './lib/queryClient'
+import { trackPageview } from './utils/analytics'
+import { HomePage } from './pages/HomePage'
+import { PokerStatsPage } from './pages/poker/PokerStatsPage'
+import { ChristmasCardPage } from './pages/ChristmasCardPage'
+import { WifiPage } from './pages/WifiPage'
+import { PokerYearInReviewPage } from './pages/poker/PokerYearInReviewPage'
 
-const queryClient = new QueryClient({
-	defaultOptions: {
-		queries: {
-			staleTime: 5 * 60 * 1000, // 5 minutes
-			retry: 1,
-		},
-	},
-});
-
-function App() {
-	return (
-		<QueryClientProvider client={queryClient}>
-			<ServicesProvider>
-				<Router>
-					<Routes>
-						<Route path="/" element={<HomePage />} />
-						<Route path="/poker/stats" element={<PokerStatsPage />} />
-						<Route path="/christmas-card" element={<ChristmasCardPage />} />
-						<Route
-							path="/poker/review/:name"
-							element={<PokerYearInReviewPage />}
-						/>
-						<Route path="/wifi" element={<WifiPage />} />
-					</Routes>
-				</Router>
-			</ServicesProvider>
-		</QueryClientProvider>
-	);
+function getRouterBasename(): string {
+  const base = import.meta.env.BASE_URL
+  return base.endsWith('/') ? base.slice(0, -1) : base
 }
 
-export default App;
+function RouteAnalytics() {
+  const location = useLocation()
+
+  useEffect(() => {
+    trackPageview()
+  }, [location.pathname])
+
+  return null
+}
+
+function HashRedirect() {
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    const raw = location.hash
+    if (!raw.startsWith('#/')) return
+    navigate(raw.slice(1), { replace: true })
+  }, [location.hash, navigate])
+
+  return null
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <ServicesProvider>
+          <BrowserRouter basename={getRouterBasename() || undefined}>
+            <RouteAnalytics />
+            <HashRedirect />
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/poker/stats" element={<PokerStatsPage />} />
+              <Route path="/christmas-card" element={<ChristmasCardPage />} />
+              <Route path="/poker/review/:name" element={<PokerYearInReviewPage />} />
+              <Route path="/wifi" element={<WifiPage />} />
+            </Routes>
+          </BrowserRouter>
+        </ServicesProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
+  )
+}
+
+export default App

@@ -1,263 +1,352 @@
-import React, { useMemo } from "react";
-import Chart from "react-apexcharts";
-import { ApexOptions } from "apexcharts";
-import { Box, Typography, useTheme, useMediaQuery } from "@mui/material";
-import { PokerSession } from "../../types/poker/types";
-import { stringToColor } from "./utils";
+import { useMemo } from 'react'
+import Chart from 'react-apexcharts'
+import type { ApexOptions } from 'apexcharts'
+import type { PokerSession } from '../../types/poker/types'
+import { useMediaQuery } from '../../hooks/useMediaQuery'
+import { useTheme } from '../../theme'
+import { playerColor, playerColors, withAlpha } from './playerColor'
+import Button from '../Button'
 
-interface PerformanceChartProps {
-	sessions: PokerSession[];
+const MUTED_SERIES_ALPHA = 0.22
+
+type PerformanceChartProps = {
+  sessions: PokerSession[]
+  focusPlayers: string[]
+  hoveredPlayer: string | null
+  onHoverPlayer: (name: string | null) => void
+  onTogglePlayer: (name: string) => void
+  onClearPeople: () => void
 }
 
-const PerformanceChart: React.FC<PerformanceChartProps> = ({ sessions }) => {
-	const theme = useTheme();
-	const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-	const [selectedPlayer, setSelectedPlayer] = React.useState<string | null>(null);
+type SeriesPoint = {
+  x: number
+  y: number
+  dayProfit: number
+}
 
-	const players = Array.from(new Set(sessions.map(s => s.player))).sort();
-	const allDates = Array.from(new Set(sessions.map(s => s.date.getTime())))
-		.sort((a, b) => a - b)
-		.map(timestamp => new Date(timestamp));
+export default function PerformanceChart({
+  sessions,
+  focusPlayers,
+  hoveredPlayer,
+  onHoverPlayer,
+  onTogglePlayer,
+  onClearPeople,
+}: PerformanceChartProps) {
+  const { theme } = useTheme()
+  const isMobile = useMediaQuery('(max-width: 767px)')
+  const focused = focusPlayers.length > 0
+  const chartHeight = isMobile ? 380 : 500
 
-	const dateLabels = allDates.map(date => date.toLocaleDateString("en-US", {
-		month: "short",
-		day: "numeric",
-	}));
+  const allPlayers = useMemo(
+    () => [...new Set(sessions.map((session) => session.player))].sort((a, b) => a.localeCompare(b)),
+    [sessions],
+  )
 
-	const colorsWithOpacity = players.map(player => {
-		const isSelected = selectedPlayer === null || selectedPlayer === player;
-		const baseColor = stringToColor(player);
-		if (selectedPlayer === null || isSelected) return baseColor;
+  const colorsByPlayer = useMemo(() => playerColors(allPlayers), [allPlayers])
 
-		const r = parseInt(baseColor.slice(1, 3), 16), g = parseInt(baseColor.slice(3, 5), 16), b = parseInt(baseColor.slice(5, 7), 16);
-		return `rgba(${r}, ${g}, ${b}, 0.1)`;
-	});
+  const plottedPlayers = useMemo(
+    () =>
+      focused ? focusPlayers.filter((player) => allPlayers.includes(player)) : allPlayers,
+    [focused, focusPlayers, allPlayers],
+  )
 
-	const strokeWidths = players.map(player => {
-		const isSelected = selectedPlayer === null || selectedPlayer === player;
-		if (selectedPlayer === null) return isMobile ? 1.5 : 2.5;
-		return isSelected ? (isMobile ? 3 : 4) : 1;
-	});
+  const seriesPlayers = useMemo(() => {
+    if (
+      hoveredPlayer &&
+      allPlayers.includes(hoveredPlayer) &&
+      !plottedPlayers.includes(hoveredPlayer)
+    ) {
+      return [...plottedPlayers, hoveredPlayer]
+    }
+    return plottedPlayers
+  }, [allPlayers, hoveredPlayer, plottedPlayers])
 
-	const markerSizes = players.map(player => {
-		const isSelected = selectedPlayer === null || selectedPlayer === player;
-		if (selectedPlayer === null) return isMobile ? 3 : 4;
-		return isSelected ? (isMobile ? 5 : 6) : 0;
-	});
+  const allDates = useMemo(
+    () =>
+      [...new Set(sessions.map((session) => session.date.getTime()))]
+        .sort((a, b) => a - b)
+        .map((stamp) => new Date(stamp)),
+    [sessions],
+  )
 
-	const series = useMemo(() => {
-		return players.map((player) => {
-			const playerSessions = sessions
-				.filter(s => s.player === player)
-				.sort((a, b) => a.date.getTime() - b.date.getTime());
+  const dateLabels = useMemo(
+    () =>
+      allDates.map((date) =>
+        date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        }),
+      ),
+    [allDates],
+  )
 
-			let cumulative = 0;
-			const data = playerSessions.map(session => {
-				cumulative += session.profit;
-				const dateIndex = allDates.findIndex(date => date.getTime() === session.date.getTime());
-				return { x: dateIndex, y: cumulative, dayProfit: session.profit };
-			});
-			return { name: player, data: data };
-		});
-	}, [players, sessions, allDates]);
+  const series = useMemo(
+    () => buildSeries(seriesPlayers, sessions, allDates),
+    [seriesPlayers, sessions, allDates],
+  )
 
-	const yRange = useMemo(() => {
-		const allValues = series.flatMap(s => s.data.map(d => d.y));
-		if (allValues.length === 0) {
-			return 100;
-		}
+  const yRange = useMemo(() => {
+    const values = buildSeries(plottedPlayers, sessions, allDates).flatMap((item) =>
+      item.data.map((point) => point.y),
+    )
+    if (values.length === 0) return 100
+    return Math.max(...values.map((value) => Math.abs(value))) + 5
+  }, [plottedPlayers, sessions, allDates])
 
-		// Find max absolute value and add $5 buffer for symmetric bounds around zero
-		const maxAbsValue = Math.max(...allValues.map(v => Math.abs(v)));
+  const tokens = readChartTokens()
+  const hovering = hoveredPlayer != null
+  const colors = seriesPlayers.map((player) => {
+    const color = playerColor(player, colorsByPlayer)
+    if (hovering && player !== hoveredPlayer) return withAlpha(color, MUTED_SERIES_ALPHA)
+    return color
+  })
+  const strokeWidth = focused ? (isMobile ? 3.25 : 4) : isMobile ? 2.25 : 3
+  const markerSize = focused ? (isMobile ? 5.5 : 6.5) : isMobile ? 4 : 5
+  const strokeWidths = seriesPlayers.map((player) => {
+    if (!hovering) return strokeWidth
+    return player === hoveredPlayer ? (isMobile ? 3.25 : 4) : isMobile ? 1.5 : 2
+  })
+  const markerSizes = seriesPlayers.map((player) => {
+    if (!hovering) return markerSize
+    return player === hoveredPlayer ? markerSize : Math.max(2, markerSize - 2)
+  })
 
-		return maxAbsValue + 5;
-	}, [series]);
+  const options: ApexOptions = {
+    chart: {
+      type: 'line',
+      fontFamily: 'inherit',
+      background: 'transparent',
+      foreColor: tokens.muted,
+      toolbar: { show: false },
+      zoom: { enabled: false },
+      animations: hovering
+        ? {
+            enabled: false,
+            dynamicAnimation: { enabled: false },
+          }
+        : {
+            enabled: true,
+            speed: 280,
+            animateGradually: { enabled: true, delay: 18 },
+            dynamicAnimation: { enabled: true, speed: 140 },
+          },
+    },
+    colors,
+    stroke: {
+      curve: 'monotoneCubic',
+      width: strokeWidths,
+      lineCap: 'round',
+    },
+    states: {
+      hover: { filter: { type: 'none' } },
+      active: { filter: { type: 'none' } },
+    },
+    xaxis: {
+      type: 'category',
+      categories: dateLabels,
+      tooltip: { enabled: false },
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+      labels: {
+        style: { fontSize: isMobile ? '10px' : '11px', colors: tokens.muted },
+        rotate: isMobile ? -45 : 0,
+        hideOverlappingLabels: true,
+      },
+      crosshairs: {
+        show: true,
+        width: 1,
+        position: 'back',
+        stroke: { color: tokens.border, width: 1, dashArray: 3 },
+      },
+    },
+    yaxis: {
+      min: -yRange,
+      max: yRange,
+      tickAmount: isMobile ? 4 : 6,
+      labels: {
+        formatter: (val) => `$${Math.round(val)}`,
+        style: { colors: tokens.muted, fontSize: isMobile ? '10px' : '11px' },
+      },
+    },
+    annotations: {
+      yaxis: [
+        {
+          y: 0,
+          borderColor: tokens.textSecondary,
+          borderWidth: 1,
+          strokeDashArray: 0,
+          opacity: 0.55,
+        },
+      ],
+    },
+    legend: { show: false },
+    tooltip: {
+      enabled: true,
+      shared: false,
+      intersect: true,
+      theme: theme === 'dark' ? 'dark' : 'light',
+      fillSeriesColor: false,
+      followCursor: true,
+      x: { show: false },
+      custom: ({ seriesIndex, dataPointIndex }) => {
+        if (dataPointIndex === undefined || dataPointIndex < 0 || seriesIndex === undefined) {
+          return ''
+        }
 
-	const options: ApexOptions = {
-		chart: {
-			type: "line",
-			fontFamily: "inherit",
-			toolbar: { show: false },
-			zoom: { enabled: false },
-			animations: {
-				enabled: true,
-				speed: 350,
-				animateGradually: { enabled: true, delay: 20 },
-				dynamicAnimation: { enabled: true, speed: 150 }
-			},
-			events: {
-				legendClick: (ctx, index?: number) => {
-					if (typeof index === 'number') {
-						const clickedPlayer = players[index];
-						setSelectedPlayer(prev => (prev === clickedPlayer ? null : clickedPlayer));
-					}
-				}
-			}
-		},
-		colors: colorsWithOpacity,
-		stroke: {
-			curve: "monotoneCubic",
-			width: strokeWidths,
-			lineCap: "round"
-		},
-		states: {
-			hover: { filter: { type: "none" } },
-			active: { filter: { type: "none" } }
-		},
-		xaxis: {
-			type: "category",
-			categories: dateLabels,
-			tooltip: { enabled: false },
-			axisBorder: { show: false },
-			labels: {
-				style: { fontSize: isMobile ? "9px" : "11px", colors: "#999" },
-				rotate: isMobile ? -45 : 0,
-				hideOverlappingLabels: true
-			},
-			// CROSSHAIR GUIDE
-			crosshairs: {
-				show: true,
-				width: 1,
-				position: 'back',
-				stroke: { color: '#ccc', width: 1, dashArray: 3 },
-			}
-		},
-		yaxis: {
-			min: -yRange,
-			max: yRange,
-			tickAmount: isMobile ? 4 : 6,
-			labels: {
-				formatter: (val) => `$${Math.round(val)}`,
-				style: { colors: "#999", fontSize: isMobile ? "9px" : "11px" }
-			}
-		},
-		annotations: {
-			yaxis: [{
-				y: 0,
-				borderColor: "#bbb",
-				borderWidth: 1,
-				strokeDashArray: 4, // Dashed line for the zero-base
-				opacity: 0.8
-			}]
-		},
-		legend: {
-			show: true,
-			position: "bottom",
-			fontSize: isMobile ? "9px" : "13px",
-			itemMargin: { horizontal: isMobile ? 3 : 10, vertical: isMobile ? 2 : 5 },
-			onItemHover: { highlightDataSeries: false },
-			onItemClick: { toggleDataSeries: false },
-			height: isMobile ? 150 : undefined,
-		},
-		tooltip: {
-			enabled: true,
-			shared: false,
-			intersect: true,
-			theme: "light",
-			style: { fontSize: isMobile ? "10px" : "12px" },
-			fillSeriesColor: false,
-			followCursor: true,
-			x: {
-				show: false
-			},
-			custom: ({ series, seriesIndex, dataPointIndex, w }) => {
-				if (dataPointIndex === undefined || dataPointIndex < 0 || seriesIndex === undefined) return '';
+        const xValue = series[seriesIndex]?.data[dataPointIndex]?.x
+        if (xValue === undefined || xValue < 0 || xValue >= allDates.length) return ''
 
-				// Get the actual x value (date index) from the data point
-				const xValue = w.config.series[seriesIndex].data[dataPointIndex]?.x;
-				if (xValue === undefined || xValue < 0 || xValue >= allDates.length) return '';
+        const date = allDates[xValue]
+        const dateStr = date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        })
 
-				const date = allDates[xValue];
-				const dateStr = date.toLocaleDateString("en-US", {
-					month: "short",
-					day: "numeric",
-					year: "numeric"
-				});
+        const daySessions = new Map<string, number>()
+        sessions.forEach((session) => {
+          if (session.date.getTime() === date.getTime()) {
+            daySessions.set(session.player, session.profit)
+          }
+        })
 
-				// Get all sessions for this specific date
-				const daySessionsMap = new Map();
-				sessions.forEach(session => {
-					if (session.date.getTime() === date.getTime()) {
-						daySessionsMap.set(session.player, session.profit);
-					}
-				});
+        if (daySessions.size === 0) return ''
 
-				// Only show players who actually played that day
-				if (daySessionsMap.size === 0) return '';
+        const rows = [...daySessions.entries()]
+          .filter(([player]) => seriesPlayers.includes(player))
+          .sort((a, b) => a[0].localeCompare(b[0]))
+          .map(([player, dayProfit]) => {
+            const playerIndex = seriesPlayers.indexOf(player)
+            const color = playerColor(player, colorsByPlayer)
+            const cumulative = series[playerIndex]?.data.find((point) => point.x === xValue)?.y ?? 0
+            const dayClass = dayProfit >= 0 ? 'money--up' : 'money--down'
+            return `
+              <div class="chart-tooltip__row">
+                <span class="chart-tooltip__swatch" style="background:${color}"></span>
+                <span class="chart-tooltip__name">${escapeHtml(player)}</span>
+                <span class="chart-tooltip__day ${dayClass}">${formatSignedCurrency(dayProfit)}</span>
+                <span class="chart-tooltip__cum">${formatSignedCurrency(Number(cumulative))}</span>
+              </div>
+            `
+          })
+          .join('')
 
-				let tooltipContent = `
-					<div style="padding: 8px; background: white; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
-						<div style="font-weight: bold; margin-bottom: 6px; color: #333;">${dateStr}</div>
-				`;
+        if (!rows) return ''
 
-				// Show only players who played this day
-				Array.from(daySessionsMap.entries()).forEach(([player, dayProfit]) => {
-					const playerIndex = players.indexOf(player);
-					const playerColor = stringToColor(player);
-					const sign = dayProfit >= 0 ? "+" : "";
-					const profitColor = dayProfit >= 0 ? "#22c55e" : "#ef4444"; // Green for positive, red for negative
+        return `
+          <div class="chart-tooltip">
+            <p class="chart-tooltip__date">${dateStr}</p>
+            ${rows}
+          </div>
+        `
+      },
+    },
+    markers: {
+      size: markerSizes,
+      strokeWidth: isMobile ? 1.5 : 2,
+      strokeColors: tokens.surface,
+      hover: { sizeOffset: 1 },
+    },
+    grid: {
+      borderColor: tokens.border,
+      strokeDashArray: 0,
+      xaxis: { lines: { show: false } },
+      yaxis: { lines: { show: true } },
+      padding: {
+        left: isMobile ? 4 : 8,
+        right: isMobile ? 8 : 12,
+        bottom: isMobile ? 0 : 8,
+      },
+    },
+  }
 
-					// Find the cumulative total for this player on this date
-					let cumulativeTotal = 0;
-					if (playerIndex >= 0) {
-						const playerData = w.config.series[playerIndex]?.data;
-						const dataPoint: { x: number; y: number; dayProfit: number } | undefined = playerData?.find((d: { x: number; y: number; dayProfit: number }) => d.x === xValue);
-						cumulativeTotal = dataPoint?.y || 0;
-					}
+  return (
+    <div className="chart-frame">
+      <div className="chart-plot" style={{ height: chartHeight }}>
+        {focused ? (
+          <div className="chart-toolbar">
+            <div className="chart-focus-bar">
+              <p className="filter-meta">
+                {plottedPlayers.length === 1 ? '1 person' : `${plottedPlayers.length} people`} · axis
+                scaled to this set
+              </p>
+              <Button label="Clear people" variant="ghost" onClick={onClearPeople} />
+            </div>
+          </div>
+        ) : null}
+        <Chart key={theme} options={options} series={series} type="line" height={chartHeight} />
+      </div>
+      <div className="chart-legend chip-row" role="group" aria-label="Filter people on the graph">
+        {allPlayers.map((player) => {
+          const active = focused && focusPlayers.includes(player)
+          const hovered = hoveredPlayer === player
+          return (
+            <button
+              key={player}
+              type="button"
+              className={[
+                'chip',
+                'chip--player',
+                active ? 'chip--active' : null,
+                hovered ? 'chip--hover' : null,
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              style={{ ['--player-color' as string]: playerColor(player, colorsByPlayer) }}
+              aria-pressed={active}
+              onClick={() => onTogglePlayer(player)}
+              onMouseEnter={() => onHoverPlayer(player)}
+              onMouseLeave={() => onHoverPlayer(null)}
+            >
+              {player}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
 
-					tooltipContent += `
-						<div style="margin: 2px 0; display: flex; align-items: center;">
-							<span style="width: 12px; height: 12px; background: ${playerColor}; border-radius: 2px; margin-right: 6px; display: inline-block;"></span>
-							<span style="font-size: ${isMobile ? '10px' : '11px'};">
-								<strong>${player}:</strong> <span style="color: ${profitColor}; font-weight: bold;">${sign}$${dayProfit.toFixed(2)}</span>
-								<span style="color: #666; font-size: ${isMobile ? '9px' : '10px'};">(${cumulativeTotal >= 0 ? "+" : ""}$${Number(cumulativeTotal).toFixed(2)})</span>
-							</span>
-						</div>
-					`;
-				});
+function buildSeries(
+  players: string[],
+  sessions: PokerSession[],
+  allDates: Date[],
+): { name: string; data: SeriesPoint[] }[] {
+  return players.map((player) => {
+    const playerSessions = sessions
+      .filter((session) => session.player === player)
+      .sort((a, b) => a.date.getTime() - b.date.getTime())
 
-				tooltipContent += '</div>';
-				return tooltipContent;
-			}
-		},
-		markers: {
-			size: markerSizes,
-			strokeWidth: isMobile ? 1 : 2,
-			strokeColors: "#fff",
-		},
-		grid: {
-			borderColor: "#e8e8e8",
-			strokeDashArray: 2, // Faint dashed crossgrid
-			xaxis: { lines: { show: true } }, // Vertical lines
-			yaxis: { lines: { show: true } }, // Horizontal lines
-			padding: {
-				left: isMobile ? 5 : 15,
-				right: isMobile ? 5 : 15,
-				bottom: isMobile ? 0 : 10
-			}
-		}
-	};
+    let cumulative = 0
+    const data: SeriesPoint[] = playerSessions.map((session) => {
+      cumulative += session.profit
+      const dateIndex = allDates.findIndex((date) => date.getTime() === session.date.getTime())
+      return { x: dateIndex, y: cumulative, dayProfit: session.profit }
+    })
+    return { name: player, data }
+  })
+}
 
-	return (
-		<Box sx={{ width: "100%", py: isMobile ? 1 : 2 }}>
-			<Box sx={{ textAlign: "center", mb: isMobile ? 0.5 : 1 }}>
-				<Typography variant="h6" fontWeight="bold" sx={{ fontSize: isMobile ? "1.1rem" : "1.25rem" }}>
-					📈 Performance
-				</Typography>
-				<Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: -0.5 }}>
-					{`Over ${allDates.length} Sessions`}
-				</Typography>
-			</Box>
+function readChartTokens() {
+  const styles = getComputedStyle(document.documentElement)
+  const read = (name: string, fallback: string) => styles.getPropertyValue(name).trim() || fallback
+  return {
+    muted: read('--text-muted', '#9ca3af'),
+    textSecondary: read('--text-secondary', '#4b5563'),
+    border: read('--border', '#e5e7eb'),
+    surface: read('--surface', '#ffffff'),
+  }
+}
 
-			<Chart
-				key={`chart-${sessions.length}-${players.length}`}
-				options={options}
-				series={series}
-				type="line"
-				height={isMobile ? 400 : 500}
-			/>
-		</Box>
-	);
-};
+function formatSignedCurrency(value: number): string {
+  const sign = value > 0 ? '+' : value < 0 ? '−' : ''
+  return `${sign}$${Math.abs(value).toFixed(2)}`
+}
 
-export default PerformanceChart;
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+}

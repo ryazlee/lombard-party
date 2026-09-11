@@ -1,6 +1,6 @@
-import { createServices } from "./createServices";
+import { createServices } from './createServices'
 
-export { createServices, type AppServices, type CreateServicesDeps } from "./createServices";
+export { createServices, type AppServices, type CreateServicesDeps } from './createServices'
 
 /** App-wide service container (stable singleton). */
-export const services = createServices();
+export const services = createServices()

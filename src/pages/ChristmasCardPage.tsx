@@ -1,15 +1,12 @@
-import React from "react";
-import { Box, Typography } from "@mui/material";
-import { PageWithParticles } from "../components/common/Page";
+import PageShell from '../components/PageShell'
+import SectionCard from '../components/SectionCard'
 
-export const ChristmasCardPage: React.FC = () => {
-	return (
-		<PageWithParticles title="2025 Christmas Card">
-			<Box>
-				<Typography variant="body1" color="text.secondary">
-					🎄 Under Construction 🎅, Please check again later!
-				</Typography>
-			</Box>
-		</PageWithParticles>
-	);
-};
+export function ChristmasCardPage() {
+  return (
+    <PageShell subtitle="Christmas card">
+      <SectionCard title="2025 Christmas card">
+        <p className="notice">Not ready yet. Check back later.</p>
+      </SectionCard>
+    </PageShell>
+  )
+}

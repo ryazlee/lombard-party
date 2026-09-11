@@ -1,75 +1,26 @@
-import React from "react";
-import { Box, Typography } from "@mui/material";
-import { PageWithParticles } from "../components/common/Page";
+import PageShell from '../components/PageShell'
+import SectionCard from '../components/SectionCard'
 
-export const WifiPage: React.FC = () => {
-	return (
-		<PageWithParticles title="Wifi Details">
-			<Box
-				sx={{
-					textAlign: "center",
-					maxWidth: 600,
-					mx: "auto",
-					mt: 4,
-				}}
-			>
-				<Typography
-					variant="h5"
-					color="text.secondary"
-					sx={{ mb: 4, fontWeight: 500 }}
-				>
-					Scan the QR code below to connect
-				</Typography>
+export function WifiPage() {
+  const qrSrc = `${import.meta.env.BASE_URL}media/wifi-qr-code.png`
 
-				<Box
-					sx={{
-						bgcolor: "white",
-						borderRadius: 4,
-						p: 4,
-						boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
-						mb: 3,
-					}}
-				>
-					<img
-						src={`${process.env.PUBLIC_URL}/media/wifi-qr-code.png`}
-						alt="Wifi QR Code"
-						style={{
-							width: "100%",
-							maxWidth: 300,
-							height: "auto",
-							display: "block",
-							margin: "0 auto",
-						}}
-					/>
-				</Box>
-
-				<Box
-					sx={{
-						bgcolor: "white",
-						borderRadius: 3,
-						p: 3,
-						boxShadow: "0 4px 16px rgba(0,0,0,0.06)",
-					}}
-				>
-					<Typography
-						variant="body2"
-						color="text.secondary"
-						sx={{ mb: 1 }}
-					>
-						Network Details
-					</Typography>
-					<Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-						📶 NutBusters
-					</Typography>
-					<Typography
-						variant="body1"
-						color="text.secondary"
-						sx={{ fontFamily: "monospace" }}
-					>
-						🔑 GoBears99!
-					</Typography>
-				</Box>
-			</Box>
-		</PageWithParticles>
-	);
-};
+  return (
+    <PageShell subtitle="WiFi">
+      <div className="wifi-panel">
+        <SectionCard title="Scan to join" subtitle="Camera on the QR code, then connect.">
+          <img className="wifi-qr" src={qrSrc} alt="WiFi QR code for NutBusters" />
+          <dl>
+            <div className="wifi-detail">
+              <dt>Network</dt>
+              <dd>NutBusters</dd>
+            </div>
+            <div className="wifi-detail">
+              <dt>Password</dt>
+              <dd className="mono">GoBears99!</dd>
+            </div>
+          </dl>
+        </SectionCard>
+      </div>
+    </PageShell>
+  )
+}

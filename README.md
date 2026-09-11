@@ -1,104 +1,37 @@
-# Lombard Party
+# Lombard
 
-Your apartment hub for poker stats and more.
+Apartment hub for poker stats and WiFi at 548 Lombard.
 
 ## Setup
 
-1. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+cp .env.example .env
+```
 
-2. **Set up Google Sheets API**:
-   - Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
-   - Create a new project or select an existing one
-   - Enable the Google Sheets API
-   - Create an API key (Credentials → Create Credentials → API Key)
-   - Restrict the API key to only allow Google Sheets API
-   
-3. **Configure environment variables**:
-   - Copy `.env.example` to `.env`:
-     ```bash
-     cp .env.example .env
-     ```
-   - Add your Google Sheets API key to `.env`:
-     ```
-     REACT_APP_GOOGLE_SHEETS_API_KEY=your_api_key_here
-     ```
+Google Sheets is public-read via CSV by default. To use the Sheets API instead, create an API key, restrict it to Google Sheets, and set:
 
-4. **Make your Google Sheet accessible**:
-   - Open your Google Sheet
-   - Click "Share" → Change to "Anyone with the link can view"
-   - Update the `SHEET_ID` in `src/services/store/PokerStore.ts` if needed
+```
+VITE_GOOGLE_SHEETS_API_KEY=your_api_key_here
+```
 
-## Available Scripts
+Local mock data (no network):
 
-### `npm start`
+```
+VITE_USE_MOCK=true
+```
 
-Runs the app in development mode at [http://localhost:3000](http://localhost:3000).
+Update `SHEET_ID` in `src/services/store/PokerStore.ts` if the sheet changes. The sheet must be viewable by anyone with the link.
 
-### `npm run build`
+## Scripts
 
-Builds the app for production to the `build` folder.
+- `npm run dev` — Vite at http://localhost:5173/lombard-party/
+- `npm run build` — typecheck + production build to `dist/`
+- `npm run preview` — preview the production build
+- `npm run lint` — oxlint
 
-## Features
+Deploys to GitHub Pages from `main` via Actions.
 
-- **Home Page**: Simple landing page with navigation
-- **Poker Stats**: View poker game statistics including:
-  - Player summaries with total profit, ROI, and hourly rates
-  - Recent session history
-  - Real-time data from Google Sheets
+## Stack
 
-## Tech Stack
-
-- React 19 with TypeScript
-- React Router for navigation
-- Tailwind CSS for styling
-- Google Sheets API for data fetching
-
-# Getting Started with Create React App
-
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-
-## Available Scripts
-
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+Vite, React 19, TypeScript, TanStack Query, semantic CSS + Tailwind 4 tokens. Poker numbers come from Google Sheets through a store → service → hook path.

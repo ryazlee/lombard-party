@@ -1,9 +1,9 @@
-import type { PlayerSummary, PokerSession } from "../../types/poker/types";
+import type { PlayerSummary, PokerSession } from '../../types/poker/types'
 
 export type PokerData = {
-	sessions: PokerSession[];
-	playerSummaries: PlayerSummary[];
-};
+  sessions: PokerSession[]
+  playerSummaries: PlayerSummary[]
+}
 
 /**
  * IPokerStore — data backend for poker sessions.
@@ -13,5 +13,5 @@ export type PokerData = {
  * The service layer owns aggregation and orchestration.
  */
 export interface IPokerStore {
-	getPokerData(): Promise<PokerData>;
+  getPokerData(): Promise<PokerData>
 }

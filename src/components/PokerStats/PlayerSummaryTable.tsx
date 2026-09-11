@@ -1,175 +1,271 @@
-import React from "react";
-import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
-import { Box, Typography, useTheme, useMediaQuery } from "@mui/material";
-import type { PlayerStat } from "../../types/poker/types";
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { Filter } from 'lucide-react'
+import type { PlayerStat } from '../../types/poker/types'
+import { playerColor, playerColors } from './playerColor'
+import Button from '../Button'
 
-interface PlayerSummaryTableProps {
-	playerStats: PlayerStat[];
+type SortKey = 'player' | 'sessions' | 'totalWinnings' | 'avgProfit' | 'highestSingleWinning' | 'roi'
+
+type PlayerSummaryTableProps = {
+  playerStats: PlayerStat[]
+  selectedPlayers: string[]
+  hoveredPlayer: string | null
+  onHoverPlayer: (name: string | null) => void
+  onTogglePlayer: (name: string) => void
+  onClearPeople: () => void
+  clearDisabled?: boolean
 }
 
-const formatCurrency = (value: number): string => {
-	return `$${value.toFixed(2)}`;
-};
+const COLUMNS: { key: SortKey; label: string; numeric?: boolean }[] = [
+  { key: 'player', label: 'Player' },
+  { key: 'sessions', label: 'Sessions', numeric: true },
+  { key: 'totalWinnings', label: 'Total', numeric: true },
+  { key: 'avgProfit', label: 'Avg / game', numeric: true },
+  { key: 'highestSingleWinning', label: 'Best session', numeric: true },
+  { key: 'roi', label: 'ROI', numeric: true },
+]
 
-const formatPercent = (value: number): string => {
-	return `${value.toFixed(1)}%`;
-};
+export function PlayerSummaryTable({
+  playerStats,
+  selectedPlayers,
+  hoveredPlayer,
+  onHoverPlayer,
+  onTogglePlayer,
+  onClearPeople,
+  clearDisabled = false,
+}: PlayerSummaryTableProps) {
+  const [sortKey, setSortKey] = useState<SortKey>('totalWinnings')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+  const [query, setQuery] = useState('')
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const filterInputRef = useRef<HTMLInputElement>(null)
+  const menuId = useId()
+  const filterActive = query.trim().length > 0
 
-const getTextColorStyle = (value: number): React.CSSProperties => {
-	return {
-		color: value >= 0 ? "#16a34a" : "#dc2626", // green-600 or red-600
-		fontWeight: "600",
-	};
-};
+  const selectedSet = useMemo(() => new Set(selectedPlayers), [selectedPlayers])
 
-const baseColumns: GridColDef<PlayerStat>[] = [
-	{
-		field: "player",
-		headerName: "Player",
-		flex: 1,
-		minWidth: 100, // Ensure minimum width
-		sortable: true,
-		headerClassName: "super-app-theme--header",
-	},
-	{
-		field: "sessions",
-		headerName: "Sessions",
-		flex: 0.5,
-		minWidth: 80,
-		type: "number",
-		sortable: true,
-		headerClassName: "super-app-theme--header",
-	},
-	{
-		field: "totalWinnings",
-		headerName: "Total Winnings",
-		flex: 1,
-		minWidth: 120,
-		type: "number",
-		sortable: true,
-		align: "right",
-		headerAlign: "right",
-		headerClassName: "super-app-theme--header",
-		renderCell: (params: GridRenderCellParams<PlayerStat, number>) =>
-			params.value !== undefined && ( // Check for undefined/null
-				<span style={getTextColorStyle(params.value)}>
-					{formatCurrency(params.value)}
-				</span>
-			),
-	},
-	{
-		field: "avgProfit",
-		headerName: "Avg Profit",
-		flex: 1,
-		minWidth: 100,
-		type: "number",
-		sortable: true,
-		align: "right",
-		headerAlign: "right",
-		headerClassName: "super-app-theme--header",
-		renderCell: (params: GridRenderCellParams<PlayerStat, number>) =>
-			params.value !== undefined && (
-				<span style={getTextColorStyle(params.value)}>
-					{formatCurrency(params.value)}
-				</span>
-			),
-	},
-	{
-		field: "highestSingleWinning",
-		headerName: "Highest Single Win",
-		flex: 1,
-		minWidth: 120,
-		type: "number",
-		sortable: true,
-		align: "right",
-		headerAlign: "right",
-		headerClassName: "super-app-theme--header",
-		valueFormatter: (value) => formatCurrency(value),
-	},
-	{
-		field: "roi",
-		headerName: "ROI (%)",
-		flex: 1,
-		minWidth: 90,
-		type: "number",
-		sortable: true,
-		align: "right",
-		headerAlign: "right",
-		headerClassName: "super-app-theme--header",
-		renderCell: (params: GridRenderCellParams<PlayerStat, number>) =>
-			params.value !== undefined && (
-				<span style={getTextColorStyle(params.value)}>
-					{formatPercent(params.value)}
-				</span>
-			),
-	},
-];
+  const colorsByPlayer = useMemo(
+    () => playerColors(playerStats.map((stat) => stat.player)),
+    [playerStats],
+  )
 
-export const PlayerSummaryTable: React.FC<PlayerSummaryTableProps> = ({
-	playerStats,
-}) => {
-	const theme = useTheme();
-	const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const maxAbs = useMemo(() => {
+    if (playerStats.length === 0) return 1
+    return Math.max(...playerStats.map((stat) => Math.abs(stat.totalWinnings)), 1)
+  }, [playerStats])
 
-	const rowsWithId = playerStats.map((stat, index) => ({
-		...stat,
-		id: index + 1,
-	}));
+  const rows = useMemo(() => {
+    const needle = query.trim().toLowerCase()
+    const filtered = needle
+      ? playerStats.filter((stat) => stat.player.toLowerCase().includes(needle))
+      : [...playerStats]
 
-	return (
-		<>
-			<Typography
-				variant={isMobile ? "h5" : "h4"}
-				component="h2"
-				align="center"
-				fontWeight="bold"
-				sx={{ mb: isMobile ? 2 : 4, color: "#1f2937" }}
-			>
-				Poker Player Profit Summary
-			</Typography>
+    filtered.sort((a, b) => {
+      const left = a[sortKey]
+      const right = b[sortKey]
+      if (typeof left === 'string' && typeof right === 'string') {
+        const cmp = left.localeCompare(right)
+        return sortDir === 'asc' ? cmp : -cmp
+      }
+      const cmp = Number(left) - Number(right)
+      return sortDir === 'asc' ? cmp : -cmp
+    })
+    return filtered
+  }, [playerStats, sortKey, sortDir, query])
 
-			<Box
-				sx={{
-					height: isMobile ? 550 : 600,
-					width: "100%",
-					mx: "auto",
-					maxWidth: 1200,
-					borderRadius: 2,
-					border: `2px solid ${theme.palette.grey[200]}`,
-					overflowX: "auto",
-					bgcolor: "white",
-					"& .super-app-theme--header": {
-						bgcolor: "rgba(243, 244, 246, 1)", // gray-100
-						fontWeight: "bold",
-						color: "rgba(75, 85, 99, 1)", // gray-600
-						fontSize: isMobile ? 12 : 14,
-					},
-				}}
-			>
-				<DataGrid
-					rows={rowsWithId}
-					columns={baseColumns}
-					initialState={{
-						sorting: {
-							sortModel: [{ field: "roi", sort: "desc" }],
-						},
-					}}
-					pageSizeOptions={[5, 10, 20]}
-					disableRowSelectionOnClick
-					sx={{
-						border: "none",
-						"& .MuiDataGrid-cell": {
-							py: isMobile ? 0.5 : 1.5,
-							px: isMobile ? 1 : 2,
-							fontSize: isMobile ? 12 : 14,
-						},
-						"& .MuiDataGrid-columnHeaderTitle": {
-							whiteSpace: "normal", // Allow header text wrapping
-							lineHeight: "normal",
-						},
-					}}
-				/>
-			</Box>
-		</>
-	);
-};
+  useEffect(() => {
+    if (!menuOpen) return
+
+    function onPointerDown(event: PointerEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setMenuOpen(false)
+    }
+
+    document.addEventListener('pointerdown', onPointerDown, true)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown, true)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [menuOpen])
+
+  useEffect(() => {
+    if (menuOpen) filterInputRef.current?.focus()
+  }, [menuOpen])
+
+  function onSort(key: SortKey) {
+    if (key === sortKey) {
+      setSortDir((current) => (current === 'asc' ? 'desc' : 'asc'))
+      return
+    }
+    setSortKey(key)
+    setSortDir(key === 'player' ? 'asc' : 'desc')
+  }
+
+  return (
+    <div>
+      <div className="table-toolbar">
+        <div className="table-menu" ref={menuRef}>
+          <button
+            type="button"
+            className="table-menu__trigger"
+            aria-label={filterActive ? 'Filter by name, filter active' : 'Filter by name'}
+            aria-haspopup="dialog"
+            aria-expanded={menuOpen}
+            aria-controls={menuId}
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            <Filter size={16} aria-hidden="true" />
+            {filterActive ? <span className="table-menu__dot" aria-hidden="true" /> : null}
+          </button>
+          {menuOpen ? (
+            <div className="table-menu__popover" id={menuId} role="dialog" aria-label="Filter by name">
+              <label className="field">
+                <span className="field__label">Filter by name</span>
+                <input
+                  ref={filterInputRef}
+                  className="input"
+                  type="search"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Filter by name"
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+              </label>
+              <div className="table-menu__actions">
+                <Button
+                  label="Clear people"
+                  variant="ghost"
+                  onClick={() => {
+                    onClearPeople()
+                    setMenuOpen(false)
+                  }}
+                  disabled={clearDisabled}
+                />
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
+      <div className="stats-table-wrap">
+        <table className="stats-table">
+          <thead>
+            <tr>
+              {COLUMNS.map((column) => {
+                const active = sortKey === column.key
+                return (
+                  <th key={column.key} className={column.numeric ? 'is-num' : undefined} scope="col">
+                    <button
+                      type="button"
+                      className="sort-btn"
+                      onClick={() => onSort(column.key)}
+                      aria-sort={active ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+                    >
+                      {column.label}
+                      {active ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}
+                    </button>
+                  </th>
+                )
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={COLUMNS.length}>
+                  <p className="notice">No players match “{query.trim()}”.</p>
+                </td>
+              </tr>
+            ) : (
+              rows.map((stat) => {
+                const color = playerColor(stat.player, colorsByPlayer)
+                const barPct = Math.round((Math.abs(stat.totalWinnings) / maxAbs) * 100)
+                const selected = selectedSet.has(stat.player)
+                const hovered = hoveredPlayer === stat.player
+                return (
+                  <tr
+                    key={stat.player}
+                    className={
+                      [selected ? 'is-selected' : null, hovered ? 'is-hovered' : null]
+                        .filter(Boolean)
+                        .join(' ') || undefined
+                    }
+                    role="button"
+                    aria-label={`Plot ${stat.player}`}
+                    aria-pressed={selected}
+                    tabIndex={0}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onMouseEnter={() => onHoverPlayer(stat.player)}
+                    onMouseLeave={() => onHoverPlayer(null)}
+                    onClick={() => onTogglePlayer(stat.player)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault()
+                        onTogglePlayer(stat.player)
+                      }
+                    }}
+                  >
+                    <td>
+                      <span className="player-cell" style={{ ['--player-color' as string]: color }}>
+                        <span className="player-dot" aria-hidden="true" />
+                        {stat.player}
+                      </span>
+                    </td>
+                    <td className="is-num">{stat.sessions}</td>
+                    <td className="is-num">
+                      <div className="pnl-cell">
+                        <span className={moneyClass(stat.totalWinnings)}>
+                          {formatSignedCurrency(stat.totalWinnings)}
+                        </span>
+                        <span className="pnl-bar" aria-hidden="true">
+                          <span
+                            className="pnl-bar__neg"
+                            style={{ width: stat.totalWinnings < 0 ? `${barPct}%` : '0%' }}
+                          />
+                          <span
+                            className="pnl-bar__pos"
+                            style={{ width: stat.totalWinnings > 0 ? `${barPct}%` : '0%' }}
+                          />
+                        </span>
+                      </div>
+                    </td>
+                    <td className={`is-num ${moneyClass(stat.avgProfit)}`}>
+                      {formatSignedCurrency(stat.avgProfit)}
+                    </td>
+                    <td className={`is-num ${moneyClass(stat.highestSingleWinning)}`}>
+                      {formatSignedCurrency(stat.highestSingleWinning)}
+                    </td>
+                    <td className={`is-num ${moneyClass(stat.roi)}`}>{formatSignedPercent(stat.roi)}</td>
+                  </tr>
+                )
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+function moneyClass(value: number): string {
+  if (value > 0) return 'money money--up'
+  if (value < 0) return 'money money--down'
+  return 'money'
+}
+
+function formatSignedCurrency(value: number): string {
+  const sign = value > 0 ? '+' : value < 0 ? '−' : ''
+  return `${sign}$${Math.abs(value).toFixed(2)}`
+}
+
+function formatSignedPercent(value: number): string {
+  const sign = value > 0 ? '+' : value < 0 ? '−' : ''
+  return `${sign}${Math.abs(value).toFixed(1)}%`
+}

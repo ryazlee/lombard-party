@@ -1,71 +1,29 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { Box, Typography, Button, ButtonProps } from "@mui/material";
-import { PageWithParticles } from "../components/common/Page";
+import { Spade, Wifi } from 'lucide-react'
+import Button from '../components/Button'
+import PageShell from '../components/PageShell'
 
-interface LinkButtonProps extends Omit<ButtonProps, "component"> {
-	to: string;
-	children: React.ReactNode;
+export function HomePage() {
+  return (
+    <PageShell home>
+      <div className="home">
+        <div className="home__copy">
+          <p className="home__lede">Apartment hub for all things at Lombard!</p>
+          <p className="home__note">
+            <img
+              className="home__note-mark"
+              src={`${import.meta.env.BASE_URL}road.png`}
+              alt=""
+              width={18}
+              height={18}
+            />
+            Lombard, Lombarded, Lombarding...
+          </p>
+        </div>
+        <div className="home__actions">
+          <Button label="Poker stats" icon={<Spade size={16} />} to="/poker/stats" />
+          <Button label="WiFi" icon={<Wifi size={16} />} variant="secondary" to="/wifi" />
+        </div>
+      </div>
+    </PageShell>
+  )
 }
-
-const LinkButton: React.FC<LinkButtonProps> = ({
-	to,
-	children,
-	sx,
-	...props
-}) => {
-	return (
-		<Button
-			component={Link as any}
-			to={to}
-			variant="contained"
-			size="large"
-			sx={{
-				bgcolor: "#2563eb",
-				":hover": { bgcolor: "#1d4ed8" },
-				color: "white",
-				px: 4,
-				py: 2,
-				borderRadius: 2,
-				fontWeight: "bold",
-				...sx,
-			}}
-			{...props}
-		>
-			{children}
-		</Button>
-	);
-};
-
-export const HomePage: React.FC = () => {
-	return (
-		<PageWithParticles
-			centered
-			showBackButton={false}
-			contentSx={{ textAlign: "center" }}
-		>
-			<Typography
-				variant="h3"
-				fontWeight="bold"
-				sx={{ mb: 2, color: "#1f2937" }}
-			>
-				Welcome to 548 Lombard
-			</Typography>
-			<Typography variant="subtitle1" sx={{ mb: 4, color: "#4b5563" }}>
-				Apartment hub for all things fun
-			</Typography>
-			<Box
-				sx={{
-					display: "flex",
-					gap: 2,
-					flexWrap: "wrap",
-					justifyContent: "center",
-				}}
-			>
-				<LinkButton to="/wifi">WiFi Info</LinkButton>
-				<LinkButton to="/poker/stats">Poker Stats</LinkButton>
-			</Box>
-		</PageWithParticles>
-	);
-};
-
