@@ -1,20 +1,14 @@
-/** Golden-angle hues so nearby names stay distinct. */
-export function playerColors(names: string[]): Map<string, string> {
-  const unique = [...new Set(names)].sort((a, b) => a.localeCompare(b))
-  const map = new Map<string, string>()
-
-  unique.forEach((name, index) => {
-    const hue = Math.round((index * 137.508) % 360)
-    const sat = 56 + (index % 4) * 6
-    const light = 40 + (index % 5) * 3
-    map.set(name, `hsl(${hue} ${sat}% ${light}%)`)
-  })
-
-  return map
+/** Stable HSL from the name itself, so a person keeps the same color across years and filters. */
+export function playerColor(name: string, colors?: Map<string, string>): string {
+  return colors?.get(name) ?? colorFromName(name)
 }
 
-export function playerColor(name: string, colors: Map<string, string>): string {
-  return colors.get(name) ?? 'hsl(220 10% 46%)'
+export function playerColors(names: string[]): Map<string, string> {
+  const map = new Map<string, string>()
+  for (const name of names) {
+    if (!map.has(name)) map.set(name, colorFromName(name))
+  }
+  return map
 }
 
 export function withAlpha(hsl: string, alpha: number): string {
@@ -28,4 +22,21 @@ export function withAlpha(hsl: string, alpha: number): string {
   const g = Number.parseInt(value.slice(2, 4), 16)
   const b = Number.parseInt(value.slice(4, 6), 16)
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
+function colorFromName(name: string): string {
+  const hash = hashName(name)
+  const hue = hash % 360
+  const sat = 52 + (hash % 5) * 5
+  const light = 38 + ((hash >>> 8) % 6) * 3
+  return `hsl(${hue} ${sat}% ${light}%)`
+}
+
+function hashName(name: string): number {
+  let hash = 2166136261
+  for (let i = 0; i < name.length; i++) {
+    hash ^= name.charCodeAt(i)
+    hash = Math.imul(hash, 16777619)
+  }
+  return hash >>> 0
 }

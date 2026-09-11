@@ -5,7 +5,6 @@ import type { PokerSession } from '../../types/poker/types'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
 import { useTheme } from '../../theme'
 import { playerColor, playerColors, withAlpha } from './playerColor'
-import Button from '../Button'
 
 const MUTED_SERIES_ALPHA = 0.22
 
@@ -15,7 +14,6 @@ type PerformanceChartProps = {
   hoveredPlayer: string | null
   onHoverPlayer: (name: string | null) => void
   onTogglePlayer: (name: string) => void
-  onClearPeople: () => void
 }
 
 type SeriesPoint = {
@@ -30,7 +28,6 @@ export default function PerformanceChart({
   hoveredPlayer,
   onHoverPlayer,
   onTogglePlayer,
-  onClearPeople,
 }: PerformanceChartProps) {
   const { theme } = useTheme()
   const isMobile = useMediaQuery('(max-width: 767px)')
@@ -263,17 +260,6 @@ export default function PerformanceChart({
   return (
     <div className="chart-frame">
       <div className="chart-plot" style={{ height: chartHeight }}>
-        {focused ? (
-          <div className="chart-toolbar">
-            <div className="chart-focus-bar">
-              <p className="filter-meta">
-                {plottedPlayers.length === 1 ? '1 person' : `${plottedPlayers.length} people`} · axis
-                scaled to this set
-              </p>
-              <Button label="Clear people" variant="ghost" onClick={onClearPeople} />
-            </div>
-          </div>
-        ) : null}
         <Chart key={theme} options={options} series={series} type="line" height={chartHeight} />
       </div>
       <div className="chart-legend chip-row" role="group" aria-label="Filter people on the graph">

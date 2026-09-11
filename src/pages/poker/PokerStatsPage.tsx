@@ -1,5 +1,6 @@
 import { lazy, Suspense, useMemo, useState } from 'react'
 import { PlayerSummaryTable } from '../../components/PokerStats/PlayerSummaryTable'
+import Button from '../../components/Button'
 import PageShell from '../../components/PageShell'
 import SectionCard from '../../components/SectionCard'
 import { useServices } from '../../context/ServicesContext'
@@ -122,7 +123,18 @@ export function PokerStatsPage() {
           </SectionCard>
         ) : (
           <>
-            <SectionCard title="Cumulative profit">
+            <SectionCard
+              title="Cumulative profit"
+              actions={
+                <Button
+                  label="Clear people"
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearPeople}
+                  disabled={focusPlayers.length === 0}
+                />
+              }
+            >
               <Suspense fallback={<p className="notice">Loading chart…</p>}>
                 <PerformanceChart
                   sessions={filteredSessions}
@@ -130,7 +142,6 @@ export function PokerStatsPage() {
                   hoveredPlayer={hoveredPlayer}
                   onHoverPlayer={setHoveredPlayer}
                   onTogglePlayer={togglePlayer}
-                  onClearPeople={clearPeople}
                 />
               </Suspense>
             </SectionCard>
